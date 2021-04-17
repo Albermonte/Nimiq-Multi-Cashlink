@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "vsls",
+			"taskUid": "npm:dev",
+			"problemMatcher": [
+				"$vsls"
+			],
+			"label": "Shared: npm:dev"
+		}
+	]
+}
