@@ -30,6 +30,8 @@
 	"dependencies": {
 		"@nimiq/core-web": "^1.5.8",
 		"@nimiq/hub-api": "^1.4.2-beta.0",
-		"sirv-cli": "^1.0.0"
+		"@nimiq/utils": "^0.7.0",
+		"sirv-cli": "^1.0.0",
+		"svelte-simple-modal": "^0.10.0"
 	}
 }
