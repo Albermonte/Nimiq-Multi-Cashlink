@@ -4,7 +4,6 @@ import Nimiq from "@nimiq/core-web";
 import HubApi from "@nimiq/hub-api";
 import {
 	start,
-	ready,
 	client,
 	accounts,
 	consensus,
@@ -23,6 +22,8 @@ import {
 	showModal,
 	totalAmount,
 	multiCashlink,
+	cashlinkArray,
+	CashlinkStore,
 } from "./store";
 import ConsensusModal from "./modals/ConsensusModal.svelte";
 import WordsModal from "./modals/WordsModal.svelte";
@@ -68,6 +69,32 @@ export const initNimiq = async () => {
 		const amount = get(totalAmount);
 		// Que es esto?
 		// TODO: if (accountBalance >= amount) showModal.set(null);
+	});
+
+	// Check every cashlink state on head change
+	height.subscribe(async () => {
+		await client.waitForConsensusEstablished();
+		const $cashlinkArray = get(cashlinkArray);
+		if (!$cashlinkArray.length) return;
+
+		const array = [];
+		for (const cashlink of $cashlinkArray) {
+			if (!cashlink.claimed) {
+				try {
+					const tx = await client.getTransaction(cashlink.txhash);
+					if (tx.state === "mined" || tx.state === "confirmed") {
+						cashlink.funded = true;
+						const recipient = await client.getAccount(tx.recipient);
+						if (recipient.balance === 0) cashlink.claimed = true;
+					}
+				} catch (e) {
+					console.log(`Tx: ${cashlink.txhash} not mined`, e);
+				}
+			}
+
+			array.push(cashlink);
+		}
+		cashlinkArray.set(array);
 	});
 };
 
@@ -169,20 +196,31 @@ export const createMultiCashlinks = async () => {
 	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
 	const $wallet = get(wallet);
 
-	await Array.from({ length: $multiCashlink.nTx }).forEach(async () => {
-		const $height = get(height);
-		const cashlink = generateCashlink(amountInLunas);
+	const array = Array.from(
+		{ length: $multiCashlink.nTx },
+		(): CashlinkStore => {
+			const $height = get(height);
+			const cashlink = generateCashlink(amountInLunas);
 
-		const tx = $wallet.createTransaction(
-			Nimiq.Address.fromUserFriendlyAddress(cashlink.address),
-			amountInLunas,
-			feeAmounts[$multiCashlink.fee], // Fee, which is not required in the testnet
-			$height, // Blockchain height from when the transaction should be valid (we set the current height)
-		);
-
-		await client.sendTransaction(tx);
-		console.log(cashlink.url);
-	});
+			const tx = $wallet.createTransaction(
+				Nimiq.Address.fromUserFriendlyAddress(cashlink.address),
+				amountInLunas,
+				feeAmounts[$multiCashlink.fee], // Fee, which is not required in the testnet
+				$height, // Blockchain height from when the transaction should be valid (we set the current height)
+			);
+			client.sendTransaction(tx);
+			return {
+				url: cashlink.url,
+				amount: $multiCashlink.amount,
+				txhash: tx.hash().toHex(),
+				funded: false,
+				claimed: false,
+			};
+		},
+	);
+	// TODO: test
+	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(array));
+	// console.log(get(cashlinkArray));
 
 	// TODO: ?? Send cashlinks on next block to prevent more than 500 on same block? Alberto piensa en inglés, pero redacta en español lo siguiente: Creo que ya se va a hacer asi sin problema pero bueno
 	// console.log(await client.mempool.getTransactions());

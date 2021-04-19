@@ -28,6 +28,7 @@
 		"typescript": "^4.0.0"
 	},
 	"dependencies": {
+		"@macfja/svelte-persistent-store": "^1.1.0",
 		"@nimiq/core-web": "^1.5.8",
 		"@nimiq/hub-api": "^1.4.2-beta.0",
 		"@nimiq/utils": "^0.7.0",

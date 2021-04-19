@@ -2,7 +2,13 @@
 	import Modal from "svelte-simple-modal";
 	import Footer from "./Footer.svelte";
 
-	import { balance, totalAmount, multiCashlink, showModal } from "./store";
+	import {
+		balance,
+		totalAmount,
+		multiCashlink,
+		showModal,
+		cashlinkArray,
+	} from "./store";
 	import {
 		show24Words,
 		feeAmounts,
@@ -10,7 +16,7 @@
 		maxCashlinks,
 		maxFreeCashlinks,
 	} from "./service";
-import { height } from "nimiq-svelte-stores";
+	import { height } from "nimiq-svelte-stores";
 
 	initNimiq();
 
@@ -128,6 +134,22 @@ import { height } from "nimiq-svelte-stores";
 					Create Cashlinks
 				</button>
 			</div>
+			{#each $cashlinkArray as cashlink, i}
+				<p
+					style="width: 400px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis;"
+				>
+					<a href={cashlink.url}>Cashlink {i + 1}</a>
+					Status:
+					{#if cashlink.claimed}
+						<p class="nq-button-s light-blue">Claimed</p>
+					{:else if cashlink.funded}
+						<p class="nq-button-s green">Funded</p>
+					{:else}
+						<p class="nq-button-s orange">Pending</p>
+					{/if}
+					Amount: {cashlink.amount} NIM
+				</p>
+			{/each}
 		</form>
 	</div>
 </main>
@@ -139,7 +161,7 @@ import { height } from "nimiq-svelte-stores";
 	closeOnOuterClick={false}
 	styleWindow={{
 		width: "65rem",
-		height: "min-content"
+		height: "min-content",
 	}}
 />
 

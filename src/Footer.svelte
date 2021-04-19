@@ -40,7 +40,7 @@
 				</span>
 			{/if}
 			<span>
-				Local balance: {$balance} NIM
+				Local Balance: {$balance} NIM
 			</span>
 		</div>
 	{/if}
