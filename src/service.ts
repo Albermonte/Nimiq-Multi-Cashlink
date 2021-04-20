@@ -1,4 +1,5 @@
 import { get } from "svelte/store";
+import { navigate } from "svelte-routing";
 
 import Nimiq from "@nimiq/core-web";
 import HubApi from "@nimiq/hub-api";
@@ -11,20 +12,18 @@ import {
 } from "nimiq-svelte-stores";
 import { Utf8Tools } from "@nimiq/utils";
 
-// TODO Revisar
-// import Cashlink from "./Cashlink";
-// import type { CashlinkState } from "./Cashlink";
 import type { Cashlink } from "./model";
-
 import {
 	wallet,
 	balance,
 	showModal,
 	totalAmount,
 	multiCashlink,
+	latestCashlinks,
 	cashlinkArray,
 	CashlinkStore,
 } from "./store";
+
 import ConsensusModal from "./modals/ConsensusModal.svelte";
 import WordsModal from "./modals/WordsModal.svelte";
 import ModalContent from "./modals/ModalContent.svelte";
@@ -66,18 +65,16 @@ export const initNimiq = async () => {
 	accounts.subscribe(([account]) => {
 		const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
 		balance.set(accountBalance);
-		const amount = get(totalAmount);
-		// Que es esto?
-		// TODO: if (accountBalance >= amount) showModal.set(null);
 	});
 
 	// Check every cashlink state on head change
 	height.subscribe(async () => {
 		await client.waitForConsensusEstablished();
-		const $cashlinkArray = get(cashlinkArray);
+		// TODO: Move to history page and only fetch on that page
+		/* const $cashlinkArray = get(cashlinkArray);
 		if (!$cashlinkArray.length) return;
 
-		const array = [];
+		const cashlinks = [];
 		for (const cashlink of $cashlinkArray) {
 			if (!cashlink.claimed) {
 				try {
@@ -85,16 +82,38 @@ export const initNimiq = async () => {
 					if (tx.state === "mined" || tx.state === "confirmed") {
 						cashlink.funded = true;
 						const recipient = await client.getAccount(tx.recipient);
-						if (recipient.balance === 0) cashlink.claimed = true;
+						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
 					}
 				} catch (e) {
 					console.log(`Tx: ${cashlink.txhash} not mined`, e);
 				}
 			}
 
-			array.push(cashlink);
+			cashlinks.push(cashlink);
 		}
-		cashlinkArray.set(array);
+		cashlinkArray.set(cashlinks); */
+
+		const $latestCashlinks = get(latestCashlinks);
+		if (!$latestCashlinks.length) return;
+
+		const cashlinks = [];
+		for (const cashlink of $latestCashlinks) {
+			if (!cashlink.claimed) {
+				try {
+					const tx = await client.getTransaction(cashlink.txhash);
+					if (tx.state === "mined" || tx.state === "confirmed") {
+						cashlink.funded = true;
+						const recipient = await client.getAccount(tx.recipient);
+						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
+					}
+				} catch (e) {
+					console.log(`Tx: ${cashlink.txhash} not mined`, e);
+				}
+			}
+
+			cashlinks.push(cashlink);
+		}
+		latestCashlinks.set(cashlinks);
 	});
 };
 
@@ -138,10 +157,20 @@ const receiveTxFromUser = async (totalAmount: number) => {
  * Wait until tx is known
  */
 const waitForFunds = async (txhash: string): Promise<void> => {
-	return new Promise((resolve) => {
+	return new Promise(async (resolve) => {
+		try {
+			const tx = await client.getTransaction(txhash);
+			if (tx.state === "mined" || tx.state === "confirmed") resolve();
+		} catch (e) {
+			if (isDev) console.error(e);
+		}
 		client.addTransactionListener(
 			(tx) => {
-				if (tx.transactionHash.toHex() === txhash) resolve();
+				if (
+					tx.transactionHash.toHex() === txhash &&
+					(tx.state === "mined" || tx.state === "confirmed")
+				)
+					resolve();
 			},
 			[get(wallet).address],
 		);
@@ -151,8 +180,12 @@ const waitForFunds = async (txhash: string): Promise<void> => {
 /**
  * Check that the temporal wallet had received the expected amount
  */
-const walletHasEnoughAmount = (expectedAmount: number): boolean => {
-	return get(balance) >= expectedAmount;
+const walletHasEnoughAmount = async (
+	expectedAmount: number,
+): Promise<boolean> => {
+	const $wallet = get(wallet);
+	const { balance } = await client.getAccount($wallet.address);
+	return balance >= expectedAmount;
 };
 
 /**
@@ -180,15 +213,17 @@ export const createMultiCashlinks = async () => {
 		showModal.set(ConsensusModal);
 		await client.waitForConsensusEstablished();
 	}
-	if (!walletHasEnoughAmount(get(totalAmount))) {
-		const txHash = await receiveTxFromUser(get(totalAmount));
+	const $totalAmount = get(totalAmount);
+	if (!(await walletHasEnoughAmount($totalAmount))) {
+		const txHash = await receiveTxFromUser($totalAmount);
 		showModal.set(ModalContent);
 		await waitForFunds(txHash);
-		showModal.set(null);
-		if (!walletHasEnoughAmount(get(totalAmount))) {
-			// TODO Button to claim back balance
+		showModal.set(null); // TODO: Notify with native notifications if not focused?
+		if (!(await walletHasEnoughAmount($totalAmount))) {
+			// TODO: Button to claim back balance
 			console.error(
 				"Oh boi, we have robbed your money because the money you sent is not enough MUAHAHAH",
+				`TotalAmount: ${$totalAmount}`,
 			);
 		}
 	}
@@ -196,7 +231,7 @@ export const createMultiCashlinks = async () => {
 	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
 	const $wallet = get(wallet);
 
-	const array = Array.from(
+	const cashlinks = Array.from(
 		{ length: $multiCashlink.nTx },
 		(): CashlinkStore => {
 			const $height = get(height);
@@ -218,12 +253,10 @@ export const createMultiCashlinks = async () => {
 			};
 		},
 	);
-	// TODO: test
-	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(array));
-	// console.log(get(cashlinkArray));
+	latestCashlinks.set(cashlinks);
+	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
 
-	// TODO: ?? Send cashlinks on next block to prevent more than 500 on same block? Alberto piensa en inglés, pero redacta en español lo siguiente: Creo que ya se va a hacer asi sin problema pero bueno
-	// console.log(await client.mempool.getTransactions());
+	navigate("/success");
 };
 
 const generateCashlink = (amount: number): Cashlink => {
@@ -232,7 +265,7 @@ const generateCashlink = (amount: number): Cashlink => {
 		"Cashlink by Multi Cashlink",
 	);
 
-	// TODO: Handle error
+	// TODO: Handle error?
 	if (!Nimiq.NumberUtils.isUint8(message_bytes.byteLength))
 		message_bytes = Utf8Tools.stringToUtf8ByteArray("");
 
@@ -268,6 +301,35 @@ const generateCashlink = (amount: number): Cashlink => {
 		address: new_wallet.address.toUserFriendlyAddress(),
 		url: `${hubDomain}/cashlink/#${url}`,
 	};
+};
+
+/**
+ * Delete claimed Cashlinks from store
+ */
+export const deleteClaimedCashlinks = async () => {
+	await client.waitForConsensusEstablished();
+	const $cashlinkArray = get(cashlinkArray);
+	if (!$cashlinkArray.length) return;
+
+	const array = [];
+	for (const cashlink of $cashlinkArray) {
+		if (cashlink.claimed) continue;
+		array.push(cashlink);
+	}
+	cashlinkArray.set(array);
+};
+
+export const deletePendingCashlinks = async () => {
+	await client.waitForConsensusEstablished();
+	const $cashlinkArray = get(cashlinkArray);
+	if (!$cashlinkArray.length) return;
+
+	const array = [];
+	for (const cashlink of $cashlinkArray) {
+		if (!cashlink.claimed && !cashlink.funded) continue;
+		array.push(cashlink);
+	}
+	cashlinkArray.set(array);
 };
 
 /**

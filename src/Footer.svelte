@@ -48,8 +48,6 @@
 
 <style lang="scss">
 	footer {
-		position: fixed;
-		bottom: 0;
 		width: 100%;
 		background: var(--nimiq-blue-bg-darkened);
 		display: flex;
