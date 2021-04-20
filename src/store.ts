@@ -26,7 +26,11 @@ export const balance: Writable<number> = writable(0);
 export const totalAmount: Writable<number> = writable(0);
 export const wallet: Writable<Wallet> = writable(null);
 export const showModal: Writable<any> = writable(null);
-export const latestCashlinks: Writable<Array<CashlinkStore>> = writable([]);
+export const latestCashlinks: PersistentStore<Array<CashlinkStore>> = persist(
+	writable([]),
+	indexedDBStorage(),
+	"latestCashlinks",
+);
 export const cashlinkArray: PersistentStore<Array<CashlinkStore>> = persist(
 	writable([]),
 	indexedDBStorage(),

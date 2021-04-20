@@ -54,10 +54,11 @@ export const initNimiq = async () => {
 			network: isDev ? "test" : "main",
 		},
 	);
-	consensus.subscribe((cons) => {
+	const consensusSubscription = consensus.subscribe((cons) => {
 		if (cons === "established") {
 			const currentModal = get(showModal);
 			if (currentModal === ConsensusModal) showModal.set(null);
+			consensusSubscription(); // Unsubscribe
 		}
 	});
 
@@ -92,28 +93,6 @@ export const initNimiq = async () => {
 			cashlinks.push(cashlink);
 		}
 		cashlinkArray.set(cashlinks); */
-
-		const $latestCashlinks = get(latestCashlinks);
-		if (!$latestCashlinks.length) return;
-
-		const cashlinks = [];
-		for (const cashlink of $latestCashlinks) {
-			if (!cashlink.claimed) {
-				try {
-					const tx = await client.getTransaction(cashlink.txhash);
-					if (tx.state === "mined" || tx.state === "confirmed") {
-						cashlink.funded = true;
-						const recipient = await client.getAccount(tx.recipient);
-						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
-					}
-				} catch (e) {
-					console.log(`Tx: ${cashlink.txhash} not mined`, e);
-				}
-			}
-
-			cashlinks.push(cashlink);
-		}
-		latestCashlinks.set(cashlinks);
 	});
 };
 

@@ -4,7 +4,6 @@
 	import {
 		show24Words,
 		feeAmounts,
-		initNimiq,
 		maxCashlinks,
 		maxFreeCashlinks,
 	} from "../service";
