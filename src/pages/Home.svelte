@@ -9,7 +9,7 @@
 	} from "../service";
 
 	export const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
-	export const randomAmountTx = `${Math.floor(Math.random() * 1000)}`;
+	export const randomAmountTx = (Math.random() * 1000).toFixed(2);
 
 	multiCashlink.subscribe((multiCashlink) => {
 		const { nTx, amount, fee } = multiCashlink;
@@ -137,6 +137,7 @@
 		min-height: 60vh;
 		form {
 			.field-amount {
+				// https://github.com/lunanimous/nim-widgets/blob/7bfd9c70d0f089ab28bf7ac3f69307f829fa4f3f/src/components/donate/donate.css#L365
 				position: relative;
 
 				h4 {
@@ -145,19 +146,35 @@
 
 				input {
 					width: 100%;
+					box-sizing: border-box;
+					padding: 12px;
+					border: solid 1px var(--nimiq-gray);
+					// color: var(--nimiq-light-blue-darkened);
+					background: 0 0;
+					border-radius: 8px;
+					outline: 0;
+					transition: color 0.2s ease, border 0.2s ease;
+					background-clip: padding-box;
+				}
+
+				input:focus {
+					border-color: var(--nimiq-highlight-bg);
 				}
 
 				.nim-label {
+					display: block;
 					position: absolute;
-					background: var(--nimiq-gold-bg);
-					right: 7px;
+					right: 12px;
 					top: 50%;
 					bottom: 50%;
-					height: 24px;
-					border-radius: 5px;
-					padding: 3px 5px;
-					font-size: 0.75em;
-					font-weight: bold;
+					margin: 0;
+					padding: 0;
+					font-size: 16px;
+					font-weight: 600;
+					letter-spacing: 0.08em;
+					opacity: 0.55;
+					transition: opacity 0.2s ease-out;
+					color: var(--nimiq-light-blue);
 				}
 
 				.radio-inputs {
@@ -225,6 +242,7 @@
 			h3 {
 				font-size: 1.25em;
 				font-weight: bold;
+				margin-right: 6px;
 
 				.total {
 					color: #ccc;
@@ -236,5 +254,18 @@
 				margin: 2em 0;
 			}
 		}
+	}
+
+	// Hide arrows from input: https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp
+	/* Chrome, Safari, Edge, Opera */
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* Firefox */
+	input[type="number"] {
+		-moz-appearance: textfield;
 	}
 </style>

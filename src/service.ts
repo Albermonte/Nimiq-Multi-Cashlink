@@ -200,6 +200,7 @@ export const createMultiCashlinks = async () => {
 		showModal.set(null); // TODO: Notify with native notifications if not focused?
 		if (!(await walletHasEnoughAmount($totalAmount))) {
 			// TODO: Button to claim back balance
+			// TODO: Claim unclaimed Cashlinks
 			console.error(
 				"Oh boi, we have robbed your money because the money you sent is not enough MUAHAHAH",
 				`TotalAmount: ${$totalAmount}`,
