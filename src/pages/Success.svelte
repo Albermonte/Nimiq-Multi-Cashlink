@@ -9,7 +9,15 @@
 
 	let pageName = "Success";
 	let copyButtonText = "Copy All";
+	let fundedAmount = 0;
 	let allFunded = false;
+	let cashlinks = [];
+	const latestUnsubscribe = latestCashlinks.subscribe(($) => {
+		cashlinks = $;
+		cashlinks.forEach((x) => {
+			if (x.funded) fundedAmount++;
+		});
+	});
 
 	const waitForReadyState = async () => {
 		const $ready = get(ready);
@@ -32,11 +40,11 @@
 		await waitForReadyState();
 		await client.waitForConsensusEstablished();
 
-		const $latestCashlinks = get(latestCashlinks);
-		if (!$latestCashlinks.length) return;
+		if (!cashlinks.length) return;
+		// Check if all has funded property as true
+		allFunded = cashlinks.every((e) => e.funded === true);
 
-		const cashlinks = [];
-		for (const cashlink of $latestCashlinks) {
+		for (const [i, cashlink] of cashlinks.entries()) {
 			if (!cashlink.claimed) {
 				try {
 					const tx = await client.getTransaction(cashlink.txhash);
@@ -44,16 +52,16 @@
 						cashlink.funded = true;
 						const recipient = await client.getAccount(tx.recipient);
 						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
+						// TODO: if not funded give option to resend to pending cashlinks, automatic and ask user before?
+						cashlinks[i] = cashlink;
 					}
 				} catch (e) {
 					console.log(`Tx: ${cashlink.txhash} not mined`, e);
 				}
 			}
-
-			cashlinks.push(cashlink);
+			latestCashlinks.set(cashlinks);
 		}
 		allFunded = cashlinks.every((e) => e.funded === true);
-		latestCashlinks.set(cashlinks);
 	});
 
 	const copyToClipboard = () => {
@@ -75,13 +83,13 @@
 
 	// Unsubscribe when leaving page
 	onDestroy(() => {
-		console.log("Height Unsubscribe");
 		heightUnsubscribe();
+		latestUnsubscribe();
 	});
 </script>
 
 <main>
-	{#if $latestCashlinks.length === 0}
+	{#if cashlinks.length === 0}
 		<p>
 			You don't have any recent cashlink, to generate new ones go to
 			<Link to="/">Home</Link>
@@ -92,7 +100,10 @@
 		{#if allFunded}
 			<p>Your Cashlinks are all ready, share them with the world 🙌🏼</p>
 		{:else}
-			<p>Your Cashlinks are being funded, but can be already shared 🙌🏼</p>
+			<p>
+				{`${fundedAmount}/${$latestCashlinks.length}`} Cashlinks funded, but you
+				can already share them 🙌🏼
+			</p>
 		{/if}
 		<!-- <button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
 			>Delete Claimed</button
@@ -103,7 +114,7 @@
 		<button class="nq-button-pill blue" on:click={copyToClipboard}
 			>{copyButtonText}</button
 		>
-		{#each $latestCashlinks as cashlink, i}
+		{#each cashlinks as cashlink, i}
 			<p
 				style="width: 400px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; margin: auto"
 			>
@@ -120,6 +131,7 @@
 				{/if}
 				Amount: {cashlink.amount} NIM
 			</p>
+			<!-- TODO: include social media share button on each cashlink? -->
 		{/each}
 	{/if}
 </main>
