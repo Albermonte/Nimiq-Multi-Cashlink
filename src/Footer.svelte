@@ -48,7 +48,9 @@
 
 <style lang="scss">
 	footer {
-		width: 100%;
+		position: fixed;
+		bottom: 0;
+		width: 100vw;
 		background: var(--nimiq-blue-bg-darkened);
 		display: flex;
 		justify-content: space-between;

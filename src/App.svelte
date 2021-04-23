@@ -4,24 +4,28 @@
 	import Home from "./pages/Home.svelte";
 	import Success from "./pages/Success.svelte";
 	import About from "./pages/About.svelte";
-	export let url = ""; //This property is necessary declare to avoid ignore the Router
+	import History from "./pages/History.svelte";
 	import Footer from "./Footer.svelte";
+	export let url = ""; //This property is necessary declare to avoid ignore the Router
 
 	import { showModal } from "./store";
 
-	import { initNimiq } from "./service";
+	import { initNimiq } from "./services/Nimiq";
 	initNimiq();
 </script>
 
 <Router {url}>
 	<main>
 		<nav>
-			<Link to="/">Home</Link>
+			<!-- Don't use Link to prevent code being executed on backgroud from previous page -->
+			<a href="/">Home</a>
 			<Link to="about">About</Link>
+			<Link to="history">History</Link>
 		</nav>
-		<div>
+		<div style="margin: auto;">
 			<Route path="/"><Home /></Route>
 			<Route path="about"><About /></Route>
+			<Route path="history"><History /></Route>
 			<Route path="success"><Success /></Route>
 		</div>
 		<Footer />
@@ -41,7 +45,7 @@
 
 <style scoped lang="scss">
 	main {
-		height: 100vh;
+		height: calc(100vh - 21px);
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;

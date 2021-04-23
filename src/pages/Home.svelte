@@ -33,9 +33,9 @@
 		);
 	});
 
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		// TODO: Check pre conditions on inputs
-		show24Words();
+		await show24Words();
 	};
 </script>
 

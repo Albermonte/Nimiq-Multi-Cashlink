@@ -2,7 +2,7 @@
 	// export let message;
 </script>
 
-<div>
+<div class="container">
 	<svg
 		height="48"
 		width="54"
@@ -33,7 +33,16 @@
 	<p>Waiting for consensus...</p>
 </div>
 
-<style>
+<style lang="scss">
+	.container {
+		height: 25rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: center;
+		padding: 5rem;
+	}
+
 	#big-hex {
 		stroke-dashoffset: -40.5;
 		animation: big-hex 4s cubic-bezier(0.76, 0.29, 0.29, 0.76) infinite;

@@ -1,4 +1,4 @@
-import { writable, derived } from "svelte/store";
+import { writable } from "svelte/store";
 import {
 	persist,
 	indexedDBStorage,
@@ -12,6 +12,7 @@ export interface CashlinkStore {
 	url: string;
 	amount: number;
 	txhash: string;
+	validityStartHeight: number;
 	funded: boolean;
 	claimed: boolean;
 }

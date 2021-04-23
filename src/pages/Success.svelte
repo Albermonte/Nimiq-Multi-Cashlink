@@ -1,11 +1,9 @@
 <script>
 	import { onDestroy } from "svelte";
-	import { get } from "svelte/store";
 	import { Link } from "svelte-routing";
 	import { height, client, ready } from "nimiq-svelte-stores";
 
-	import { latestCashlinks } from "../store";
-	import { deleteClaimedCashlinks, deletePendingCashlinks } from "../service";
+	import { latestCashlinks, cashlinkArray } from "../store";
 
 	let pageName = "Success";
 	let copyButtonText = "Copy All";
@@ -13,14 +11,24 @@
 	let allFunded = false;
 	let cashlinks = [];
 	const latestUnsubscribe = latestCashlinks.subscribe(($) => {
+		fundedAmount = 0;
 		cashlinks = $;
 		cashlinks.forEach((x) => {
 			if (x.funded) fundedAmount++;
+			const index = $cashlinkArray.findIndex(
+				(cashlink) => cashlink.txhash === x.txhash,
+			);
+			$cashlinkArray[index] = x;
 		});
+		if (cashlinks.length === fundedAmount) allFunded = true;
+		if (allFunded) document.title = "Ready to share";
+		else document.title = `${fundedAmount}/${cashlinks.length} funded`;
+
+		// Force Svelte to update store
+		$cashlinkArray = $cashlinkArray;
 	});
 
 	const waitForReadyState = async () => {
-		const $ready = get(ready);
 		return new Promise((resolve) => {
 			if ($ready) {
 				resolve();
@@ -41,8 +49,6 @@
 		await client.waitForConsensusEstablished();
 
 		if (!cashlinks.length) return;
-		// Check if all has funded property as true
-		allFunded = cashlinks.every((e) => e.funded === true);
 
 		for (const [i, cashlink] of cashlinks.entries()) {
 			if (!cashlink.claimed) {
@@ -53,19 +59,20 @@
 						const recipient = await client.getAccount(tx.recipient);
 						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
 						// TODO: if not funded give option to resend to pending cashlinks, automatic and ask user before?
+						// Check if not mined or node didn't share info with us
 						cashlinks[i] = cashlink;
 					}
 				} catch (e) {
-					console.log(`Tx: ${cashlink.txhash} not mined`, e);
+					if (e.toString().includes("Failed to retrieve transaction receipts"))
+						console.log("Nodes don't want to share info :(");
+					else console.log(`Tx: ${cashlink.txhash} not mined`, e);
 				}
 			}
 			latestCashlinks.set(cashlinks);
 		}
-		allFunded = cashlinks.every((e) => e.funded === true);
 	});
 
 	const copyToClipboard = () => {
-		const $latestCashlinks = get(latestCashlinks);
 		let str = "";
 		for (const cashlink of $latestCashlinks) str += `${cashlink.url}\n`;
 		const el = document.createElement("textarea");
@@ -101,8 +108,8 @@
 			<p>Your Cashlinks are all ready, share them with the world 🙌🏼</p>
 		{:else}
 			<p>
-				{`${fundedAmount}/${$latestCashlinks.length}`} Cashlinks funded, but you
-				can already share them 🙌🏼
+				{`${fundedAmount}/${cashlinks.length}`} Cashlinks funded, but you can already
+				share them 🙌🏼
 			</p>
 		{/if}
 		<!-- <button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
