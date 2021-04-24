@@ -5,6 +5,8 @@
 
 	import { latestCashlinks, cashlinkArray } from "../store";
 
+	import CashlinkItem from "../components/CashlinkItem.svelte";
+
 	let pageName = "Success";
 	let copyButtonText = "Copy All";
 	let fundedAmount = 0;
@@ -122,33 +124,16 @@
 			>{copyButtonText}</button
 		>
 		{#each cashlinks as cashlink, i}
-			<p
-				style="width: 400px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; margin: auto"
-			>
-				<a class="text-blue-600 underline" href={cashlink.url} target="_blank"
-					>Cashlink {i + 1}</a
-				>
-				Status:
-				{#if cashlink.claimed}
-					<p class="nq-button-s light-blue">Claimed</p>
-				{:else if cashlink.funded}
-					<p class="nq-button-s green">Funded</p>
-				{:else}
-					<p class="nq-button-s orange">Pending</p>
-				{/if}
-				Amount: {cashlink.amount} NIM
-			</p>
-			<!-- TODO: include social media share button on each cashlink? -->
+			<CashlinkItem index={i} {cashlink} />
 		{/each}
 	{/if}
 </main>
 
 <style>
 	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
+		display: grid;
+		place-items: center;
+		height: 100%;
 	}
 
 	h1 {
@@ -156,11 +141,5 @@
 		text-transform: uppercase;
 		font-size: 4em;
 		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
 	}
 </style>

@@ -43,7 +43,7 @@
 	}}
 />
 
-<style scoped lang="scss">
+<style lang="scss">
 	main {
 		height: calc(100vh - 21px);
 		display: flex;

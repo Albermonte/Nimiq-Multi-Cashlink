@@ -2,7 +2,7 @@
 	// export let message;
 </script>
 
-<div class="container">
+<main>
 	<svg
 		height="48"
 		width="54"
@@ -31,10 +31,10 @@
 		/>
 	</svg>
 	<p>Waiting for consensus...</p>
-</div>
+</main>
 
 <style lang="scss">
-	.container {
+	main {
 		height: 25rem;
 		display: flex;
 		flex-direction: column;
