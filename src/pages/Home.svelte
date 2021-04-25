@@ -8,6 +8,8 @@
 		maxFreeCashlinks,
 	} from "../service";
 
+	import FeeSelector from "../components/FeeSelector.svelte";
+
 	export const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
 	export const randomAmountTx = (Math.random() * 1000).toFixed(2);
 
@@ -19,7 +21,7 @@
 		if (nTx > maxFreeCashlinks && fee === "free") {
 			// TODO: show msg to user
 			// TODO: add disabled style to free fee
-			multiCashlink.fee = "normal";
+			multiCashlink.fee = "standard";
 		} else {
 			// TODO: remove disable style to free fee
 		}
@@ -75,43 +77,8 @@
 
 			<div class="field-amount">
 				<div>
-					<!-- https://github.com/nimiq/vue-components/blob/master/src/components/SelectBar.vue -->
 					<h4>Network Fee</h4>
-					<div class="radio-inputs">
-						<div class="radio">
-							<input
-								id="free-tx"
-								name="radio"
-								type="radio"
-								bind:group={$multiCashlink.fee}
-								value={"free"}
-							/>
-							<label for="free-tx" class="radio-label">Free</label>
-						</div>
-
-						<div class="radio">
-							<input
-								id="normal-tx"
-								name="radio"
-								type="radio"
-								bind:group={$multiCashlink.fee}
-								value={"normal"}
-								max={maxCashlinks}
-							/>
-							<label for="normal-tx" class="radio-label">Normal</label>
-						</div>
-
-						<div class="radio">
-							<input
-								id="fast-tx"
-								name="radio"
-								type="radio"
-								bind:group={$multiCashlink.fee}
-								value={"fast"}
-							/>
-							<label for="fast-tx" class="radio-label">Fast</label>
-						</div>
-					</div>
+					<FeeSelector />
 				</div>
 			</div>
 			<div class="bottom">

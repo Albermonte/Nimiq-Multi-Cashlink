@@ -105,7 +105,7 @@
 			If you want to check the history go to TODO:
 		</p>
 	{:else}
-		<h1>{pageName}!</h1>
+		<h1 class="nq-h1">{pageName}!</h1>
 		{#if allFunded}
 			<p>Your Cashlinks are all ready, share them with the world 🙌🏼</p>
 		{:else}
@@ -137,9 +137,8 @@
 	}
 
 	h1 {
-		color: #ff3e00;
 		text-transform: uppercase;
-		font-size: 4em;
+		font-size: 3.5em;
 		font-weight: 100;
 	}
 </style>

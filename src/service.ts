@@ -86,8 +86,8 @@ export const show24Words = async () => {
  */
 export const feeAmounts = {
 	free: 0,
-	normal: 138,
-	fast: 276,
+	standard: 138,
+	express: 276,
 };
 
 /**

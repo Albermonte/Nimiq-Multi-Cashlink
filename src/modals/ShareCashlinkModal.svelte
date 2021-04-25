@@ -25,7 +25,7 @@
 
 <main>
 	<p>
-		Choose Social Network where to share <span class="cashlink-name nq-blue"
+		Choose Social Network to share <span class="cashlink-name nq-blue"
 			>Cashlink {index + 1}</span
 		>
 	</p>
@@ -36,7 +36,7 @@
 		<Pinterest
 			class="share-button"
 			{url}
-			media="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Svelte_Logo.svg/200px-Svelte_Logo.svg.png"
+			media={`${window.origin}/favicon.png`}
 			description={title}
 		/>
 		<Telegram class="share-button" text={title} {url} />
