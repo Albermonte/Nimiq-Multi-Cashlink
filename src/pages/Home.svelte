@@ -12,6 +12,7 @@
 
 	export const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
 	export const randomAmountTx = (Math.random() * 1000).toFixed(2);
+	let validInput = false;
 
 	multiCashlink.subscribe((multiCashlink) => {
 		const { nTx, amount, fee } = multiCashlink;
@@ -33,6 +34,9 @@
 		totalAmount.set(
 			Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0),
 		);
+
+		if (nTx > 0 && amount >= 0.00001) validInput = true;
+		else validInput = false;
 	});
 
 	const handleSubmit = async () => {
@@ -85,7 +89,11 @@
 				<h3>
 					<span class="total">Total:</span> <span>{$totalAmount} NIM</span>
 				</h3>
-				<button class="nq-button-pill light-blue" type="submit">
+				<button
+					class="nq-button light-blue"
+					disabled={!validInput}
+					type="submit"
+				>
 					Create Cashlinks
 				</button>
 			</div>
@@ -102,6 +110,7 @@
 
 	.container {
 		min-height: 60vh;
+		min-width: 56rem;
 		form {
 			.field-amount {
 				// https://github.com/lunanimous/nim-widgets/blob/7bfd9c70d0f089ab28bf7ac3f69307f829fa4f3f/src/components/donate/donate.css#L365
@@ -143,62 +152,6 @@
 					transition: opacity 0.2s ease-out;
 					color: var(--nimiq-light-blue);
 				}
-
-				.radio-inputs {
-					display: flex;
-					justify-content: space-around;
-					align-items: center;
-
-					.radio {
-						margin: 0.5rem;
-						input[type="radio"] {
-							position: absolute;
-							opacity: 0;
-							+ .radio-label {
-								&:before {
-									content: "";
-									background: var(--nimiq-gold);
-									border-radius: 100%;
-									border: 1px solid var(--nimiq-gold);
-									display: inline-block;
-									width: 1em;
-									height: 1em;
-									position: relative;
-									margin-right: 0.4em;
-									margin-bottom: 0.4em;
-
-									vertical-align: top;
-									cursor: pointer;
-									@apply text-center;
-									transition: all 250ms ease;
-								}
-							}
-							&:checked {
-								+ .radio-label {
-									&:before {
-										background-color: var(--nimiq-purple);
-										box-shadow: inset 0 0 0 4px var(--nimiq-gold);
-									}
-								}
-							}
-							&:focus {
-								+ .radio-label {
-									&:before {
-										outline: none;
-										border-color: var(--nimiq-purple);
-									}
-								}
-							}
-							+ .radio-label {
-								&:empty {
-									&:before {
-										margin-right: 0;
-									}
-								}
-							}
-						}
-					}
-				}
 			}
 		}
 
@@ -209,7 +162,7 @@
 			h3 {
 				font-size: 1.25em;
 				font-weight: bold;
-				margin-right: 6px;
+				margin-right: 2rem;
 
 				.total {
 					color: #ccc;
@@ -221,6 +174,12 @@
 				margin: 2em 0;
 			}
 		}
+	}
+
+	.nq-button {
+		height: 5.5rem;
+		padding: 0 1rem;
+		font-size: 1.75rem;
 	}
 
 	// Hide arrows from input: https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp

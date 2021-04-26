@@ -41,7 +41,6 @@
 		}
 
 		public getColor(option: string, index: number) {
-			console.log(option);
 			this.selectedOption = options.find((x) => x.text === option);
 			if (index <= this.selectedOption!.index) {
 				return this.selectedOption!.color;
@@ -85,7 +84,7 @@
 		display: none;
 	}
 	label {
-		padding: 1.75rem 2rem;
+		padding: 1.65rem 2rem;
 		margin: 0;
 		width: 33%;
 		text-align: center;
