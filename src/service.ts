@@ -14,6 +14,7 @@ import {
 	CashlinkStore,
 } from "./store";
 import {
+	isClientReady,
 	fundCashlink,
 	generateCashlink,
 	receiveTxFromUser,
@@ -69,6 +70,7 @@ const waitForConsensusEstablished = async () => {
 	if ($consensus !== "established") {
 		showModal.set(ConsensusModal);
 	}
+	await isClientReady();
 	await client.waitForConsensusEstablished();
 	showModal.set(null);
 };
@@ -78,8 +80,9 @@ const waitForConsensusEstablished = async () => {
  */
 export const show24Words = async () => {
 	await waitForConsensusEstablished();
-	setTimeout(() => showModal.set(WordsModal), 300);
+	setTimeout(() => showModal.set(WordsModal), 350);
 };
+show24Words();
 
 /**
  * Fee in Lunas for different options
@@ -116,7 +119,7 @@ export const createMultiCashlinks = async () => {
 	const cashlinks = Array.from(
 		{ length: $multiCashlink.nTx },
 		(): CashlinkStore => {
-			const cashlink = generateCashlink(amountInLunas);
+			const cashlink = generateCashlink(amountInLunas, $multiCashlink.message);
 
 			const tx = fundCashlink(
 				cashlink,

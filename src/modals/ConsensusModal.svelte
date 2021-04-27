@@ -7,7 +7,7 @@
 		height="48"
 		width="54"
 		viewBox="0 0 54 48"
-		color="inherit"
+		color="#1F2348"
 		class="loading-spinner"
 	>
 		<path
@@ -41,6 +41,7 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 5rem;
+		margin-top: 1.5rem;
 	}
 
 	#big-hex {

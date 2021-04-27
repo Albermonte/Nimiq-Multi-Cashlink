@@ -8,6 +8,7 @@ import {
 	accounts,
 	consensus,
 	height,
+	ready,
 } from "nimiq-svelte-stores";
 import { get } from "svelte/store";
 
@@ -86,6 +87,21 @@ export const initNimiq = async () => {
 	});
 };
 
+export const isClientReady = async (): Promise<void> => {
+	return new Promise(async (resolve) => {
+		if (get(ready)) {
+			resolve();
+		} else {
+			const readyUnsubscribe = ready.subscribe((readyState) => {
+				if (readyState) {
+					readyUnsubscribe();
+					resolve();
+				}
+			});
+		}
+	});
+};
+
 /**
  * Retrieves the local wallet in the localStorage or creates a new wallet if does not exists.
  * Then, updates the store with the wallet information
@@ -122,11 +138,9 @@ export const receiveTxFromUser = async (totalAmount: number) => {
 	}
 };
 
-export const generateCashlink = (amount: number): Cashlink => {
+export const generateCashlink = (amount: number, message: string): Cashlink => {
 	// TODO: Add theme and message from user
-	let message_bytes = Utf8Tools.stringToUtf8ByteArray(
-		"Cashlink by Multi Cashlink",
-	);
+	let message_bytes = Utf8Tools.stringToUtf8ByteArray(message);
 
 	// TODO: Handle error?
 	if (!Nimiq.NumberUtils.isUint8(message_bytes.byteLength))

@@ -21,6 +21,7 @@ export const multiCashlink: Writable<MultiCashlink> = writable({
 	amount: undefined,
 	nTx: undefined,
 	fee: "free",
+	message: "",
 });
 
 export const balance: Writable<number> = writable(0);

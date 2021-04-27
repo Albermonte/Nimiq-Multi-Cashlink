@@ -80,6 +80,17 @@
 			</div>
 
 			<div class="field-amount">
+				<h4>Message (Optional)</h4>
+				<input
+					type="text"
+					name="message"
+					class="nq-input"
+					placeholder="Here's a Cashlink for you"
+					bind:value={$multiCashlink.message}
+				/>
+			</div>
+
+			<div class="field-amount">
 				<div>
 					<h4>Network Fee</h4>
 					<FeeSelector />
@@ -117,7 +128,7 @@
 				position: relative;
 
 				h4 {
-					margin-bottom: 0;
+					margin-bottom: 0.5rem;
 				}
 
 				input {

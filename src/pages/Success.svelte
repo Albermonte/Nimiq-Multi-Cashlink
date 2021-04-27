@@ -4,6 +4,7 @@
 	import { height, client, ready } from "nimiq-svelte-stores";
 
 	import { latestCashlinks, cashlinkArray } from "../store";
+	import { isClientReady } from "../services/Nimiq";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -30,24 +31,9 @@
 		$cashlinkArray = $cashlinkArray;
 	});
 
-	const waitForReadyState = async () => {
-		return new Promise((resolve) => {
-			if ($ready) {
-				resolve();
-			} else {
-				const readyUnsubscribe = ready.subscribe(($ready) => {
-					if ($ready) {
-						readyUnsubscribe();
-						resolve();
-					}
-				});
-			}
-		});
-	};
-
 	// Check every cashlink state on head change
 	const heightUnsubscribe = height.subscribe(async () => {
-		await waitForReadyState();
+		await isClientReady();
 		await client.waitForConsensusEstablished();
 
 		if (!cashlinks.length) return;
