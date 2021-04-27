@@ -82,7 +82,6 @@ export const show24Words = async () => {
 	await waitForConsensusEstablished();
 	setTimeout(() => showModal.set(WordsModal), 350);
 };
-show24Words();
 
 /**
  * Fee in Lunas for different options
