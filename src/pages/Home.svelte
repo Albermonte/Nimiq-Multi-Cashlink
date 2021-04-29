@@ -43,6 +43,8 @@
 		// TODO: Check pre conditions on inputs
 		await show24Words();
 	};
+
+	document.title = "Multi Cashlink";
 </script>
 
 <main>
@@ -120,8 +122,12 @@
 	}
 
 	.container {
-		min-height: 60vh;
+		min-height: 70vh;
 		min-width: 56rem;
+		@media only screen and (hover: none) and (pointer: coarse) {
+			min-width: 90%;
+			max-width: 95%;
+		}
 		form {
 			.field-amount {
 				// https://github.com/lunanimous/nim-widgets/blob/7bfd9c70d0f089ab28bf7ac3f69307f829fa4f3f/src/components/donate/donate.css#L365
@@ -174,6 +180,18 @@
 				font-size: 1.25em;
 				font-weight: bold;
 				margin-right: 2rem;
+
+				@media only screen and (hover: none) and (pointer: coarse) {
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: center;
+					margin-left: 2rem;
+					span {
+						font-size: 1em;
+						text-align: center;
+					}
+				}
 
 				.total {
 					color: #ccc;

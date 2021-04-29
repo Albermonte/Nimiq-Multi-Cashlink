@@ -50,13 +50,14 @@
 	footer {
 		position: fixed;
 		bottom: 0;
-		width: 100vw;
+		width: 100%;
 		background: var(--nimiq-blue-bg-darkened);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		color: var(--nimiq-white);
 		font-size: 0.75em;
+		z-index: 3;
 
 		.network {
 			display: flex;

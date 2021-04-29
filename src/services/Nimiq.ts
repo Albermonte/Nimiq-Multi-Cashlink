@@ -58,33 +58,6 @@ export const initNimiq = async () => {
 		const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
 		balance.set(accountBalance);
 	});
-
-	// Check every cashlink state on head change
-	height.subscribe(async () => {
-		await client.waitForConsensusEstablished();
-		// TODO: Move to history page and only fetch on that page
-		/* const $cashlinkArray = get(cashlinkArray);
-		if (!$cashlinkArray.length) return;
-
-		const cashlinks = [];
-		for (const cashlink of $cashlinkArray) {
-			if (!cashlink.claimed) {
-				try {
-					const tx = await client.getTransaction(cashlink.txhash);
-					if (tx.state === "mined" || tx.state === "confirmed") {
-						cashlink.funded = true;
-						const recipient = await client.getAccount(tx.recipient);
-						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
-					}
-				} catch (e) {
-					console.log(`Tx: ${cashlink.txhash} not mined`, e);
-				}
-			}
-
-			cashlinks.push(cashlink);
-		}
-		cashlinkArray.set(cashlinks); */
-	});
 };
 
 export const isClientReady = async (): Promise<void> => {
@@ -180,6 +153,7 @@ export const generateCashlink = (amount: number, message: string): Cashlink => {
 	};
 };
 
+// TODO: change to extended tx and use CashlinkState
 export const fundCashlink = (
 	cashlink: Cashlink,
 	amount: number,
@@ -199,5 +173,6 @@ export const fundCashlink = (
 	return {
 		txhash: tx.hash().toHex(),
 		validityStartHeight: $height, // If current height > start height + 10 -> Resend Tx TODO:
+		recipient: cashlink.address,
 	};
 };

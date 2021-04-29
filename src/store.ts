@@ -12,6 +12,7 @@ export interface CashlinkStore {
 	url: string;
 	amount: number;
 	txhash: string;
+	recipient: string;
 	validityStartHeight: number;
 	funded: boolean;
 	claimed: boolean;

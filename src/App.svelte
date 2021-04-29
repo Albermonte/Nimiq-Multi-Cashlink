@@ -20,7 +20,7 @@
 			<!-- Don't use Link to prevent code being executed on backgroud from previous page -->
 			<a href="/">Home</a>
 			<Link to="about">About</Link>
-			<Link to="history">History</Link>
+			<a href="/history">History</a>
 		</nav>
 		<div style="margin: auto;">
 			<Route path="/"><Home /></Route>

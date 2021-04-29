@@ -1,9 +1,12 @@
-<script>
+<script lang="ts">
 	import { onDestroy } from "svelte";
 	import { Link } from "svelte-routing";
-	import { height, client, ready } from "nimiq-svelte-stores";
+	import { height, client } from "nimiq-svelte-stores";
+	import Nimiq from "@nimiq/core-web";
+	const { Client } = Nimiq;
 
 	import { latestCashlinks, cashlinkArray } from "../store";
+	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
@@ -12,52 +15,63 @@
 	let copyButtonText = "Copy All";
 	let fundedAmount = 0;
 	let allFunded = false;
-	let cashlinks = [];
+	let cashlinks: Array<CashlinkStore> = [];
 	const latestUnsubscribe = latestCashlinks.subscribe(($) => {
 		fundedAmount = 0;
 		cashlinks = $;
 		cashlinks.forEach((x) => {
 			if (x.funded) fundedAmount++;
-			const index = $cashlinkArray.findIndex(
-				(cashlink) => cashlink.txhash === x.txhash,
-			);
-			$cashlinkArray[index] = x;
 		});
-		if (cashlinks.length === fundedAmount) allFunded = true;
-		if (allFunded) document.title = "Ready to share";
-		else document.title = `${fundedAmount}/${cashlinks.length} funded`;
-
-		// Force Svelte to update store
-		$cashlinkArray = $cashlinkArray;
 	});
 
 	// Check every cashlink state on head change
 	const heightUnsubscribe = height.subscribe(async () => {
+		// Wait 1 second before checking so the page can be loaded
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 		await isClientReady();
 		await client.waitForConsensusEstablished();
 
 		if (!cashlinks.length) return;
 
+		fundedAmount = 0;
+		cashlinks.forEach((x) => {
+			if (x.funded) fundedAmount++;
+		});
+
 		for (const [i, cashlink] of cashlinks.entries()) {
 			if (!cashlink.claimed) {
 				try {
-					const tx = await client.getTransaction(cashlink.txhash);
-					if (tx.state === "mined" || tx.state === "confirmed") {
-						cashlink.funded = true;
-						const recipient = await client.getAccount(tx.recipient);
+					if (cashlink.funded) {
+						const recipient = await client.getAccount(cashlink.recipient);
 						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
 						// TODO: if not funded give option to resend to pending cashlinks, automatic and ask user before?
-						// Check if not mined or node didn't share info with us
+						// TODO: Check if not mined or node didn't share info with us
 						cashlinks[i] = cashlink;
+					} else {
+						const tx = await client.getTransaction(cashlink.txhash);
+						if (
+							tx.state === Client.TransactionState.MINED ||
+							tx.state === Client.TransactionState.CONFIRMED
+						) {
+							cashlink.funded = true;
+							cashlinks[i] = cashlink;
+						}
 					}
 				} catch (e) {
-					if (e.toString().includes("Failed to retrieve transaction receipts"))
+					if (
+						e.toString().includes("Failed to retrieve transaction receipts") ||
+						e.toString().includes("Failed to retrieve accounts")
+					)
 						console.log("Nodes don't want to share info :(");
 					else console.log(`Tx: ${cashlink.txhash} not mined`, e);
 				}
 			}
-			latestCashlinks.set(cashlinks);
+			if (cashlinks.length === fundedAmount) allFunded = true;
+			else allFunded = false;
+			if (allFunded) document.title = "Ready to share";
+			else document.title = `${fundedAmount}/${cashlinks.length} funded`;
 		}
+		updateStore();
 	});
 
 	const copyToClipboard = () => {
@@ -74,6 +88,19 @@
 		document.body.removeChild(el);
 		copyButtonText = "Copied!";
 		setTimeout(() => (copyButtonText = "Copy All"), 3000);
+	};
+
+	const updateStore = () => {
+		cashlinks.forEach((x) => {
+			const index = $cashlinkArray.findIndex(
+				(cashlink) => cashlink.txhash === x.txhash,
+			);
+			$cashlinkArray[index] = x;
+		});
+
+		// Force Svelte to update store
+		$cashlinkArray = $cashlinkArray;
+		$latestCashlinks = cashlinks;
 	};
 
 	// Unsubscribe when leaving page

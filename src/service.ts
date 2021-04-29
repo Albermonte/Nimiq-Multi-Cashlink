@@ -97,6 +97,7 @@ export const feeAmounts = {
  * Create cashlinks
  */
 export const createMultiCashlinks = async () => {
+	window.addEventListener("beforeunload", preventReload);
 	const $totalAmount = get(totalAmount);
 	if (!(await walletHasEnoughAmount($totalAmount))) {
 		const txHash = await receiveTxFromUser($totalAmount);
@@ -138,7 +139,13 @@ export const createMultiCashlinks = async () => {
 	latestCashlinks.set(cashlinks);
 	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
 
+	window.removeEventListener("beforeunload", preventReload);
 	navigate("/success");
+};
+
+const preventReload = (e) => {
+	e.preventDefault();
+	e.returnValue = "";
 };
 
 /**

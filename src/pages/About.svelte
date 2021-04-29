@@ -1,5 +1,7 @@
 <script>
-	let pageName = "About Page";
+	let pageName = "About";
+
+	document.title = pageName;
 </script>
 
 <main>
