@@ -16,6 +16,7 @@ export interface CashlinkStore {
 	validityStartHeight: number;
 	funded: boolean;
 	claimed: boolean;
+	message: string;
 }
 
 export const multiCashlink: Writable<MultiCashlink> = writable({

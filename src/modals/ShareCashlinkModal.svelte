@@ -15,12 +15,13 @@
 		Twitter,
 	} from "svelte-share-buttons-component";
 
-	const title = "A wild Nimiq Cashlink appeared"; // TODO: if message set by user replace this with message
-	const desc =
-		"Cashlinks are an amazing and unique feature of the Nimiq Blockchain that allows you to send $NIM to users, with or without a NIM account.";
-
 	export let url;
 	export let index;
+	export let message;
+
+	const title = `${message || "A wild Nimiq Cashlink appeared"}\n`;
+	const desc =
+		"Cashlinks are an amazing and unique feature of the Nimiq Blockchain that allows you to send $NIM to users, with or without a NIM account.";
 </script>
 
 <main>
@@ -49,8 +50,6 @@
 			text={title}
 			{url}
 			hashtags="Nimiq,Blockchain,Cashlinks"
-			via="username"
-			related="other,users"
 		/>
 	</div>
 	<button class="nq-button-pill red" on:click={() => showModal.set(null)}

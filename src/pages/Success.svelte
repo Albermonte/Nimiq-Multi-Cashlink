@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { onDestroy } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 	import { Link } from "svelte-routing";
 	import { height, client } from "nimiq-svelte-stores";
 	import Nimiq from "@nimiq/core-web";
+	import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 	const { Client } = Nimiq;
 
-	import { latestCashlinks, cashlinkArray } from "../store";
+	import { latestCashlinks, cashlinkArray, wallet } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
 
@@ -24,6 +25,24 @@
 		});
 	});
 
+	const onTransaction = (txDetails: ClientTransactionDetails) => {
+		if (txDetails.sender.equals($wallet.address)) {
+			switch (txDetails.state) {
+				case Nimiq.Client.TransactionState.MINED:
+					// Transaction has been confirmed once
+					cashlinks.forEach((cashlink, index) => {
+						if (cashlink.txhash === txDetails.transactionHash.toHex()) {
+							fundedAmount++;
+							cashlink.funded = true;
+							cashlinks[index] = cashlink;
+						}
+					});
+					updateTitle();
+					break;
+			}
+		}
+	};
+
 	// Check every cashlink state on head change
 	const heightUnsubscribe = height.subscribe(async () => {
 		// Wait 1 second before checking so the page can be loaded
@@ -39,6 +58,8 @@
 		});
 
 		for (const [i, cashlink] of cashlinks.entries()) {
+			// Skip this one if has been created less than 2 blocks ago
+			if (cashlink.validityStartHeight + 2 > $height) continue;
 			if (!cashlink.claimed) {
 				try {
 					if (cashlink.funded) {
@@ -66,10 +87,7 @@
 					else console.log(`Tx: ${cashlink.txhash} not mined`, e);
 				}
 			}
-			if (cashlinks.length === fundedAmount) allFunded = true;
-			else allFunded = false;
-			if (allFunded) document.title = "Ready to share";
-			else document.title = `${fundedAmount}/${cashlinks.length} funded`;
+			updateTitle();
 		}
 		updateStore();
 	});
@@ -103,8 +121,29 @@
 		$latestCashlinks = cashlinks;
 	};
 
+	const updateTitle = () => {
+		if (cashlinks.length === fundedAmount) {
+			allFunded = true;
+			document.title = "Ready to share";
+			updateStore();
+		} else {
+			allFunded = false;
+			document.title = `${fundedAmount}/${cashlinks.length} funded`;
+		}
+	};
+
+	let txlistener = null;
+	onMount(async () => {
+		await isClientReady();
+		txlistener = await client.addTransactionListener(onTransaction, [
+			$wallet.address,
+		]);
+		updateTitle();
+	});
+
 	// Unsubscribe when leaving page
 	onDestroy(() => {
+		client.removeListener(txlistener);
 		heightUnsubscribe();
 		latestUnsubscribe();
 	});
@@ -147,6 +186,7 @@
 		display: grid;
 		place-items: center;
 		height: 100%;
+		padding-bottom: 5rem;
 	}
 
 	h1 {

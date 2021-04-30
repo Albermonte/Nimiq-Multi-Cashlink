@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { balance, totalAmount, multiCashlink } from "../store";
 
 	import {
@@ -10,8 +10,9 @@
 
 	import FeeSelector from "../components/FeeSelector.svelte";
 
-	export const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
-	export const randomAmountTx = (Math.random() * 1000).toFixed(2);
+	const UINT8_MAX = 255; // NumberUtils.UINT8_MAX
+	const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
+	const randomAmountTx = (Math.random() * 1000).toFixed(2);
 	let validInput = false;
 
 	multiCashlink.subscribe((multiCashlink) => {
@@ -88,6 +89,7 @@
 					name="message"
 					class="nq-input"
 					placeholder="Here's a Cashlink for you"
+					maxlength={UINT8_MAX}
 					bind:value={$multiCashlink.message}
 				/>
 			</div>

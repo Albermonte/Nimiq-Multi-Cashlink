@@ -22,7 +22,7 @@ import {
 
 import ConsensusModal from "./modals/ConsensusModal.svelte";
 import WordsModal from "./modals/WordsModal.svelte";
-import ModalContent from "./modals/ModalContent.svelte";
+import WaitForFundsModal from "./modals/WaitForFundsModal.svelte";
 
 //@ts-ignore
 export const isDev: boolean = process.env.dev;
@@ -101,18 +101,20 @@ export const createMultiCashlinks = async () => {
 	const $totalAmount = get(totalAmount);
 	if (!(await walletHasEnoughAmount($totalAmount))) {
 		const txHash = await receiveTxFromUser($totalAmount);
-		showModal.set(ModalContent);
+		showModal.set(WaitForFundsModal);
 		await waitForFunds(txHash);
 		showModal.set(null); // TODO: Notify with native notifications if not focused?
 		if (!(await walletHasEnoughAmount($totalAmount))) {
 			// TODO: Button to claim back balance
 			// TODO: Claim unclaimed Cashlinks
 			console.error(
-				"Oh boi, we have robbed your money because the money you sent is not enough MUAHAHAH",
+				"Oh boi, we have robbed your money because the money you sent is not enough MUAHAHAH. Just kidding, dunno what happened yet, report this pls...",
 				`TotalAmount: ${$totalAmount}`,
 			);
 		}
 	}
+	console.log("Tx received... Creating cashlinks");
+
 	const $multiCashlink = get(multiCashlink);
 	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
 
@@ -133,12 +135,14 @@ export const createMultiCashlinks = async () => {
 				...tx,
 				funded: false,
 				claimed: false,
+				message: $multiCashlink.message,
 			};
 		},
 	);
 	latestCashlinks.set(cashlinks);
 	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
 
+	console.log("Cashlinks created... Redirecting");
 	window.removeEventListener("beforeunload", preventReload);
 	navigate("/success");
 };

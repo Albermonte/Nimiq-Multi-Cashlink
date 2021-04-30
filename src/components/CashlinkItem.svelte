@@ -2,9 +2,10 @@
 	import { bind } from "svelte-simple-modal";
 	import ShareCashlinkModal from "../modals/ShareCashlinkModal.svelte";
 	import { showModal } from "../store";
+	import type { CashlinkStore } from "../store";
 
-	export let cashlink;
-	export let index;
+	export let cashlink: CashlinkStore;
+	export let index: number;
 
 	let copyButtonText = "Copy";
 
@@ -24,7 +25,13 @@
 	};
 
 	const openShareCashlinkModal = (index: number) => {
-		showModal.set(bind(ShareCashlinkModal, { url: cashlink.url, index }));
+		showModal.set(
+			bind(ShareCashlinkModal, {
+				url: cashlink.url,
+				message: cashlink.message,
+				index,
+			}),
+		);
 	};
 </script>
 
