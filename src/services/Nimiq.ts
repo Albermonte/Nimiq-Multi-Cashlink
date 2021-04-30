@@ -14,7 +14,6 @@ import { get } from "svelte/store";
 
 import { wallet, balance, showModal } from "../store";
 
-import WordsModal from "../modals/WordsModal.svelte";
 import ConsensusModal from "../modals/ConsensusModal.svelte";
 import { CashlinkExtraData } from "../model";
 import type { Cashlink } from "../model";
@@ -90,14 +89,6 @@ const summonWallet = async () => {
 	localStorage.wallet = JSON.stringify(Array.from(nimiqWallet.exportPlain()));
 	accounts.add(nimiqWallet.address);
 	wallet.set(nimiqWallet);
-};
-
-/**
- * Show Modal with 24 words before requesting payment
- */
-export const show24Words = async () => {
-	await client.waitForConsensusEstablished();
-	setTimeout(() => showModal.set(WordsModal), 350);
 };
 
 /**

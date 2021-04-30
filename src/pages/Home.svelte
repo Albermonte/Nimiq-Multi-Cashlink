@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { balance, totalAmount, multiCashlink } from "../store";
+	import { client } from "nimiq-svelte-stores";
+
+	import { balance, totalAmount, multiCashlink, showModal } from "../store";
 
 	import { feeAmounts, maxCashlinks, maxFreeCashlinks } from "../services";
-	import { show24Words } from "../services/Nimiq";
 
 	import FeeSelector from "../components/FeeSelector.svelte";
+	import WordsModal from "../modals/WordsModal.svelte";
 
 	const UINT8_MAX = 255; // NumberUtils.UINT8_MAX
 	const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
@@ -35,7 +37,8 @@
 
 	const handleSubmit = async () => {
 		// TODO: Check pre conditions on inputs
-		await show24Words();
+		await client.waitForConsensusEstablished();
+		setTimeout(() => showModal.set(WordsModal), 350);
 	};
 
 	document.title = "Multi Cashlink";
