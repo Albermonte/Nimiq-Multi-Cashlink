@@ -41,6 +41,7 @@ export default {
 	},
 	plugins: [
 		replace({
+			preventAssignment: true,
 			'process.env.dev': !production,
 		}),
 		svelte({
@@ -66,7 +67,7 @@ export default {
 		}),
 		commonjs(),
 		typescript({
-			sourceMap: !production,
+			sourceMap: true,
 			inlineSources: !production
 		}),
 
