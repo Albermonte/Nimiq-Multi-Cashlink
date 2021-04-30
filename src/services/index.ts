@@ -1,9 +1,10 @@
 import { get } from "svelte/store";
 import { navigate } from "svelte-routing";
 
-import { client, consensus } from "nimiq-svelte-stores";
+import { client, consensus, height } from "nimiq-svelte-stores";
 import Nimiq from "@nimiq/core-web";
 
+import { CashlinkExtraData } from "../model";
 import {
 	wallet,
 	showModal,
@@ -12,17 +13,18 @@ import {
 	latestCashlinks,
 	cashlinkArray,
 	CashlinkStore,
-} from "./store";
+} from "../store";
 import {
 	isClientReady,
 	fundCashlink,
 	generateCashlink,
 	receiveTxFromUser,
-} from "./services/Nimiq";
+	getAddressToWithdraw,
+} from "./Nimiq";
 
-import ConsensusModal from "./modals/ConsensusModal.svelte";
-import WordsModal from "./modals/WordsModal.svelte";
-import WaitForFundsModal from "./modals/WaitForFundsModal.svelte";
+import ConsensusModal from "../modals/ConsensusModal.svelte";
+import WordsModal from "../modals/WordsModal.svelte";
+import WaitForFundsModal from "../modals/WaitForFundsModal.svelte";
 
 //@ts-ignore
 export const isDev: boolean = process.env.dev;
@@ -179,6 +181,52 @@ export const deletePendingCashlinks = async () => {
 		array.push(cashlink);
 	}
 	cashlinkArray.set(array);
+};
+
+export const claimUnclaimedCashlinks = async () => {
+	await client.waitForConsensusEstablished();
+	const recipientAddress = await getAddressToWithdraw();
+	const $cashlinkArray = get(cashlinkArray);
+	if (!$cashlinkArray.length) return;
+	const $height = get(height);
+
+	for (const cashlink of $cashlinkArray) {
+		if (cashlink.funded && !cashlink.claimed) {
+			const str = cashlink.url
+				.split("cashlink/#")[1]
+				.replace(/~/g, "")
+				.replace(/=*$/, (match) => new Array(match.length).fill(".").join(""));
+			const buf = Nimiq.BufferUtils.fromBase64Url(str);
+			const keyPair = Nimiq.KeyPair.derive(Nimiq.PrivateKey.unserialize(buf));
+			const value = buf.readUint64();
+			console.log(value);
+			const balance = Nimiq.Policy.coinsToLunas(cashlink.amount);
+			const recipient = Nimiq.Address.fromString(recipientAddress);
+			const transaction = new Nimiq.ExtendedTransaction(
+				Nimiq.Address.fromString(cashlink.recipient), // sender address
+				Nimiq.Account.Type.BASIC, // and account type
+				recipient, // recipient address
+				Nimiq.Account.Type.BASIC, // and type
+				balance,
+				0, // fee
+				$height,
+				Nimiq.Transaction.Flag.NONE,
+				CashlinkExtraData.CLAIMING, // the message
+			);
+			const signature = Nimiq.Signature.create(
+				keyPair.privateKey,
+				keyPair.publicKey,
+				transaction.serializeContent(),
+			);
+			const proof = Nimiq.SignatureProof.singleSig(
+				keyPair.publicKey,
+				signature,
+			).serialize();
+			transaction.proof = proof;
+
+			client.sendTransaction(transaction);
+		}
+	}
 };
 
 /**

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { wallet, showModal } from "../store";
-	import { createMultiCashlinks } from "../service";
+	import { createMultiCashlinks } from "../services";
 	/**
 	 * Retrieves 24 words from the generated wallet
 	 */

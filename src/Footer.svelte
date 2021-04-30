@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { consensus, height } from "nimiq-svelte-stores";
 	import { balance } from "./store";
-	import { isDev } from "./service";
+	import { isDev } from "./services";
 </script>
 
 <footer>

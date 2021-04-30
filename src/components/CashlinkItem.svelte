@@ -50,6 +50,7 @@
 				<p class="nq-button-s green">Funded</p>
 			{:else}
 				<p class="nq-button-s orange">Pending</p>
+				<!-- TODO: if error, show error pill and show a button to refund cashlink -->
 			{/if}
 		</div>
 		<div class="copy" data-tooltip={copyButtonText} on:click={copyToClipboard}>

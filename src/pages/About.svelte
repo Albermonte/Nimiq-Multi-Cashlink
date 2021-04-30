@@ -5,28 +5,33 @@
 </script>
 
 <main>
-	<h1>{pageName}!</h1>
-	<p>Welcome this is my <b>{pageName}</b></p>
+	<h1>Coming soon...</h1>
+	<p>
+		<span> 1. Enter the amount of NIM per cashlink </span><br />
+		<span> 2. Enter the amount of cashlinks you want to create </span><br />
+		<span>
+			3. (Optional) Include a message that will will be stored in the Cashlink
+		</span><br />
+		<span>
+			4. Choose a Network Fee, this fee will be paid on every cashlink funding
+			process.
+			<br />If you create more than 10 Cashlinks the minimum fee is
+			<b>Standard</b>.
+		</span><br />
+		<span>
+			5. All done, click on Create Cashlinks and proceed with the payout.
+		</span><br />
+	</p>
 </main>
 
 <style>
 	main {
+		display: grid;
+		place-items: center;
+		height: 100%;
+		padding-bottom: 5rem;
+	}
+	p {
 		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
 	}
 </style>

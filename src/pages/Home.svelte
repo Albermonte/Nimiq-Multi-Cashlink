@@ -6,7 +6,7 @@
 		feeAmounts,
 		maxCashlinks,
 		maxFreeCashlinks,
-	} from "../service";
+	} from "../services";
 
 	import FeeSelector from "../components/FeeSelector.svelte";
 

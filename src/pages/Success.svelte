@@ -166,12 +166,6 @@
 				share them 🙌🏼
 			</p>
 		{/if}
-		<!-- <button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
-			>Delete Claimed</button
-		>
-		<button class="nq-button-pill orange" on:click={deletePendingCashlinks}
-			>Delete Pending</button
-		> -->
 		<button class="nq-button-pill blue" on:click={copyToClipboard}
 			>{copyButtonText}</button
 		>

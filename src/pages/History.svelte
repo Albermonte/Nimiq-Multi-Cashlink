@@ -4,9 +4,14 @@
 	import Nimiq from "@nimiq/core-web";
 	const { Client } = Nimiq;
 
-	import { cashlinkArray, wallet } from "../store";
+	import { cashlinkArray } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
+	import {
+		claimUnclaimedCashlinks,
+		deletePendingCashlinks,
+		deleteClaimedCashlinks,
+	} from "../services";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -81,20 +86,29 @@
 <main>
 	<h1 class="nq-h1 nq-blue">{pageName}</h1>
 	<p>
-		<!-- TODO: <b>{pageName}</b> -->
 		{$cashlinkArray.length} Cashlinks, {fundedAmount} funded and {claimedAmount}
 		claimed
-		<!-- TODO: tell user that funded amount can be slow and not represent the real world, also on Success-->
 	</p>
 	{#if stillUpdating}
 		<span class="small-message"><i>Still updating, might be slow</i></span>
 	{/if}
+	<div class="buttons">
+		<button class="nq-button-pill green" on:click={claimUnclaimedCashlinks}
+			>Claim Unclaimed</button
+		>
+		<button class="nq-button-pill orange" on:click={deletePendingCashlinks}
+			>Delete Pending</button
+		>
+		<button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
+			>Delete Claimed</button
+		>
+	</div>
 	{#each $cashlinkArray as cashlink, index}
 		<CashlinkItem {index} {cashlink} />
 	{/each}
 </main>
 
-<style>
+<style lang="scss">
 	main {
 		display: grid;
 		place-items: center;
@@ -106,5 +120,14 @@
 		opacity: 0.7;
 		font-size: 1.5rem;
 		margin-top: -12px;
+	}
+
+	.buttons {
+		display: flex;
+		padding: 1rem 0;
+
+		button {
+			margin: 0 1rem;
+		}
 	}
 </style>

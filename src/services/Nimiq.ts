@@ -15,6 +15,7 @@ import { get } from "svelte/store";
 import { wallet, balance, showModal } from "../store";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
+import { CashlinkExtraData } from "../model";
 import type { Cashlink } from "../model";
 
 //@ts-ignore
@@ -153,7 +154,6 @@ export const generateCashlink = (amount: number, message: string): Cashlink => {
 	};
 };
 
-// TODO: change to extended tx and use CashlinkState
 export const fundCashlink = (
 	cashlink: Cashlink,
 	amount: number,
@@ -162,12 +162,27 @@ export const fundCashlink = (
 	const $height = get(height);
 	const $wallet = get(wallet);
 
-	const tx = $wallet.createTransaction(
-		Nimiq.Address.fromUserFriendlyAddress(cashlink.address),
+	const tx = new Nimiq.ExtendedTransaction(
+		$wallet.address, // sender address
+		Nimiq.Account.Type.BASIC, // and account type
+		Nimiq.Address.fromUserFriendlyAddress(cashlink.address), // recipient address
+		Nimiq.Account.Type.BASIC, // and type
 		amount,
-		fee,
-		$height, // Blockchain height from when the transaction should be valid (we set the current height)
+		fee, // fee
+		$height,
+		Nimiq.Transaction.Flag.NONE,
+		CashlinkExtraData.FUNDING, // the message
 	);
+
+	const keyPair = $wallet.keyPair;
+	const signature = Nimiq.Signature.create(
+		keyPair.privateKey,
+		keyPair.publicKey,
+		tx.serializeContent(),
+	);
+	const proof = Nimiq.SignatureProof.singleSig(keyPair.publicKey, signature);
+	tx.proof = proof.serialize();
+
 	client.sendTransaction(tx);
 
 	return {
@@ -175,4 +190,12 @@ export const fundCashlink = (
 		validityStartHeight: $height, // If current height > start height + 10 -> Resend Tx TODO:
 		recipient: cashlink.address,
 	};
+};
+
+export const getAddressToWithdraw = async () => {
+	const options = {
+		appName: "Multi Cashlink",
+	};
+	const addressInfo = await hubApi.chooseAddress(options);
+	return addressInfo.address;
 };
