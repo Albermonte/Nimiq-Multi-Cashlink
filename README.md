@@ -11,4 +11,4 @@ If you create more than 10 Cashlinks the minimum fee is `Standard`.
 
 ## Authors
 [Albermonte](https://github.com/Albermonte) & [Max](https://github.com/onmax)
- [![Donate NIM](https://www.nimiq.com/accept-donations/img/donationBtnImg/orange-big.svg)](https://wallet.nimiq.com/nimiq:NQ65GS91H8CSQFAN1EVSUK3GX7PLL9N1X4KC)
+ [![Donate NIM](https://www.nimiq.com/accept-donations/img/donationBtnImg/orange-small.svg)](https://wallet.nimiq.com/nimiq:NQ65GS91H8CSQFAN1EVSUK3GX7PLL9N1X4KC)
