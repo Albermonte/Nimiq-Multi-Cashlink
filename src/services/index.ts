@@ -23,7 +23,6 @@ import {
 } from "./Nimiq";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
-import WordsModal from "../modals/WordsModal.svelte";
 import WaitForFundsModal from "../modals/WaitForFundsModal.svelte";
 
 //@ts-ignore
@@ -75,14 +74,6 @@ const waitForConsensusEstablished = async () => {
 	await isClientReady();
 	await client.waitForConsensusEstablished();
 	showModal.set(null);
-};
-
-/**
- * Show Modal with 24 words before requesting payment
- */
-export const show24Words = async () => {
-	await waitForConsensusEstablished();
-	setTimeout(() => showModal.set(WordsModal), 350);
 };
 
 /**
@@ -199,15 +190,13 @@ export const claimUnclaimedCashlinks = async () => {
 			const buf = Nimiq.BufferUtils.fromBase64Url(str);
 			const keyPair = Nimiq.KeyPair.derive(Nimiq.PrivateKey.unserialize(buf));
 			const value = buf.readUint64();
-			console.log(value);
-			const balance = Nimiq.Policy.coinsToLunas(cashlink.amount);
 			const recipient = Nimiq.Address.fromString(recipientAddress);
 			const transaction = new Nimiq.ExtendedTransaction(
 				Nimiq.Address.fromString(cashlink.recipient), // sender address
 				Nimiq.Account.Type.BASIC, // and account type
 				recipient, // recipient address
 				Nimiq.Account.Type.BASIC, // and type
-				balance,
+				value,
 				0, // fee
 				$height,
 				Nimiq.Transaction.Flag.NONE,

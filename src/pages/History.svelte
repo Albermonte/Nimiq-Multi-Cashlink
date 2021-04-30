@@ -85,27 +85,34 @@
 
 <main>
 	<h1 class="nq-h1 nq-blue">{pageName}</h1>
-	<p>
-		{$cashlinkArray.length} Cashlinks, {fundedAmount} funded and {claimedAmount}
-		claimed
-	</p>
-	{#if stillUpdating}
-		<span class="small-message"><i>Still updating, might be slow</i></span>
+	{#if $cashlinkArray.length === 0}
+		<p>
+			You don't have any cashlink created yet, to generate new ones go to
+			<a href="/">Home</a>
+		</p>
+	{:else}
+		<p>
+			{$cashlinkArray.length} Cashlinks, {fundedAmount} funded and {claimedAmount}
+			claimed
+		</p>
+		{#if stillUpdating}
+			<span class="small-message"><i>Still updating, might be slow</i></span>
+		{/if}
+		<div class="buttons">
+			<button class="nq-button-pill green" on:click={claimUnclaimedCashlinks}
+				>Claim Unclaimed</button
+			>
+			<button class="nq-button-pill orange" on:click={deletePendingCashlinks}
+				>Delete Pending</button
+			>
+			<button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
+				>Delete Claimed</button
+			>
+		</div>
+		{#each $cashlinkArray as cashlink, index}
+			<CashlinkItem {index} {cashlink} />
+		{/each}
 	{/if}
-	<div class="buttons">
-		<button class="nq-button-pill green" on:click={claimUnclaimedCashlinks}
-			>Claim Unclaimed</button
-		>
-		<button class="nq-button-pill orange" on:click={deletePendingCashlinks}
-			>Delete Pending</button
-		>
-		<button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
-			>Delete Claimed</button
-		>
-	</div>
-	{#each $cashlinkArray as cashlink, index}
-		<CashlinkItem {index} {cashlink} />
-	{/each}
 </main>
 
 <style lang="scss">

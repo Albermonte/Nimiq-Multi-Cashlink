@@ -75,12 +75,6 @@
 		}
 	}
 
-	.infoBiteHolder {
-		height: 25rem;
-		width: 100%;
-		margin: auto;
-	}
-
 	.infoBite {
 		text-align: center;
 	}

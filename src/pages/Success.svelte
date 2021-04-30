@@ -154,7 +154,7 @@
 		<p>
 			You don't have any recent cashlink, to generate new ones go to
 			<Link to="/">Home</Link>
-			If you want to check the history go to TODO:
+			If you want to check the history go to <a href="/history">History</a>
 		</p>
 	{:else}
 		<h1 class="nq-h1">{pageName}!</h1>

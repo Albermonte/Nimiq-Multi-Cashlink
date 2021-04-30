@@ -1,12 +1,8 @@
 <script lang="ts">
 	import { balance, totalAmount, multiCashlink } from "../store";
 
-	import {
-		show24Words,
-		feeAmounts,
-		maxCashlinks,
-		maxFreeCashlinks,
-	} from "../services";
+	import { feeAmounts, maxCashlinks, maxFreeCashlinks } from "../services";
+	import { show24Words } from "../services/Nimiq";
 
 	import FeeSelector from "../components/FeeSelector.svelte";
 
@@ -22,10 +18,7 @@
 		// then normal fee will be applied
 		if (nTx > maxFreeCashlinks && fee === "free") {
 			// TODO: show msg to user
-			// TODO: add disabled style to free fee
 			multiCashlink.fee = "standard";
-		} else {
-			// TODO: remove disable style to free fee
 		}
 
 		// Set totalAmount based on user input and temp wallet balance
