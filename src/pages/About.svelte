@@ -22,8 +22,9 @@
 			5. All done, click on Create Cashlinks and proceed with the payout.
 		</span><br />
 	</p>
-	<a href="https://github.com/Albermonte/Nimiq-Multi-Cashlink#how-does-it-work"
-		>Want to know more?</a
+	<a
+		href="https://github.com/Albermonte/Nimiq-Multi-Cashlink#how-does-it-work"
+		target="_blank">Want to know more?</a
 	>
 </main>
 
