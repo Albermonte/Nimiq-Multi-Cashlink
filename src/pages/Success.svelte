@@ -39,6 +39,12 @@
 					});
 					updateTitle();
 					break;
+				case Nimiq.Client.TransactionState.EXPIRED:
+					console.log(`${txDetails.transactionHash.toHex()} Expired`);
+					break;
+				case Nimiq.Client.TransactionState.INVALIDATED:
+					console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
+					break;
 			}
 		}
 	};
