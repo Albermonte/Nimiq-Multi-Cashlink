@@ -3,7 +3,6 @@ import { navigate } from "svelte-routing";
 
 import { client, consensus, height } from "nimiq-svelte-stores";
 import Nimiq from "@nimiq/core-web";
-const { Client } = Nimiq;
 
 import { CashlinkExtraData } from "../model";
 import {
@@ -44,8 +43,7 @@ const waitForFunds = async (txhash: string): Promise<void> => {
 			(tx) => {
 				if (
 					tx.transactionHash.toHex() === txhash &&
-					(tx.state === Client.TransactionState.MINED ||
-						tx.state === Client.TransactionState.CONFIRMED)
+					(tx.state === "mined" || tx.state === "confirmed")
 				) {
 					client.removeListener(listener);
 					resolve();
