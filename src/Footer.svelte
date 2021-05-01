@@ -40,7 +40,7 @@
 					Head: {$height}
 				</span>
 			{/if}
-			{#if $balance}
+			{#if isNaN($balance)}
 				<span>
 					Local Balance: {$balance} NIM
 				</span>
