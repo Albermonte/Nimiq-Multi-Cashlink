@@ -194,7 +194,7 @@ export const fundCashlink = (
 
 export const getAddressToWithdraw = async () => {
 	const options = {
-		appName: "Multi Cashlink",
+		appName: "Multi-Cashlink",
 	};
 	const addressInfo = await hubApi.chooseAddress(options);
 	return addressInfo.address;

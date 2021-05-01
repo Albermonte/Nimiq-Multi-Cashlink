@@ -19,7 +19,7 @@
 	export let index;
 	export let message;
 
-	const title = `${message || "A wild Nimiq Cashlink appeared"}\n`;
+	const title = `${message || "A wild Nimiq Cashlink appeared"}`;
 	const desc =
 		"Cashlinks are an amazing and unique feature of the Nimiq Blockchain that allows you to send $NIM to users, with or without a NIM account.";
 </script>
