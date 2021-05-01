@@ -155,11 +155,13 @@ export const deleteClaimedCashlinks = async () => {
 	const $cashlinkArray = get(cashlinkArray);
 	if (!$cashlinkArray.length) return;
 
-	const array = [];
+	let array = [];
 	for (const cashlink of $cashlinkArray) {
-		if (cashlink.claimed) continue;
+		if (cashlink && cashlink.claimed) continue;
 		array.push(cashlink);
 	}
+
+	array = [...new Set(array.filter((x) => x != null))];
 	cashlinkArray.set(array);
 };
 
@@ -168,12 +170,14 @@ export const deletePendingCashlinks = async () => {
 	const $cashlinkArray = get(cashlinkArray);
 	if (!$cashlinkArray.length) return;
 
-	const array = [];
+	let array = [];
 	for (const cashlink of $cashlinkArray) {
-		if (!cashlink.claimed && !cashlink.funded) continue;
+		if (cashlink && !cashlink.claimed && !cashlink.funded) continue;
 		array.push(cashlink);
 	}
-	cashlinkArray.set(array);
+
+	array = [...new Set(array.filter((x) => x != null))];
+	cashlinkArray.set([...new Set(array)]);
 };
 
 export const claimUnclaimedCashlinks = async () => {
@@ -184,7 +188,7 @@ export const claimUnclaimedCashlinks = async () => {
 	const $height = get(height);
 
 	for (const cashlink of $cashlinkArray) {
-		if (cashlink.funded && !cashlink.claimed) {
+		if (cashlink && cashlink.funded && !cashlink.claimed) {
 			const str = cashlink.url
 				.split("cashlink/#")[1]
 				.replace(/~/g, "")

@@ -27,10 +27,11 @@
 		claimedAmount = 0;
 		cashlinks = $;
 		cashlinks.forEach((x) => {
-			if (x.funded) fundedAmount++;
-			if (x.claimed) claimedAmount++;
+			if (x && x.funded) fundedAmount++;
+			if (x && x.claimed) claimedAmount++;
 		});
 
+		document.title = `History - ${claimedAmount}/${fundedAmount} claimed/funded`;
 		if (cashlinks.length === fundedAmount && cashlinks.length === claimedAmount)
 			stillUpdating = false;
 	});
@@ -45,7 +46,7 @@
 		if (!cashlinks.length) return;
 
 		for (const [i, cashlink] of cashlinks.entries()) {
-			if (!cashlink.claimed) {
+			if (cashlink && !cashlink.claimed) {
 				try {
 					if (cashlink.funded) {
 						const recipient = await client.getAccount(cashlink.recipient);
@@ -110,7 +111,9 @@
 			>
 		</div>
 		{#each $cashlinkArray as cashlink, index}
-			<CashlinkItem {index} {cashlink} />
+			{#if cashlink}
+				<CashlinkItem {index} {cashlink} />
+			{/if}
 		{/each}
 	{/if}
 </main>
