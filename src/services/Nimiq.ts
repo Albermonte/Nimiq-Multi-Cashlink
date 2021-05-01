@@ -97,7 +97,7 @@ const summonWallet = async () => {
  */
 export const receiveTxFromUser = async (totalAmount: number) => {
 	const options = {
-		appName: "Multi Cashlink",
+		appName: "Multi-Cashlink",
 		recipient: get(wallet).address.toUserFriendlyAddress(),
 		value: Nimiq.Policy.coinsToLunas(totalAmount),
 		shopLogoUrl: location.origin + "/favicon.png",
