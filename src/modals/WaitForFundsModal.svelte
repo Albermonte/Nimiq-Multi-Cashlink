@@ -20,7 +20,7 @@
 	};
 
 	changeBite();
-	setInterval(() => changeBite(), 8000);
+	setInterval(() => changeBite(), 10000);
 </script>
 
 <main>
