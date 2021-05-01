@@ -41,11 +41,11 @@
 				</span>
 			{/if}
 			{#if isNaN($balance)}
+				<span> Loading Balance... </span>
+			{:else}
 				<span>
 					Local Balance: {$balance} NIM
 				</span>
-			{:else}
-				<span> Loading Balance... </span>
 			{/if}
 		</div>
 	{/if}
