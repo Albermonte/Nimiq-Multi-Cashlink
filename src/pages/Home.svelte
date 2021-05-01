@@ -3,7 +3,12 @@
 
 	import { balance, totalAmount, multiCashlink, showModal } from "../store";
 
-	import { feeAmounts, maxCashlinks, maxFreeCashlinks } from "../services";
+	import {
+		feeAmounts,
+		maxCashlinks,
+		maxFreeCashlinks,
+		waitForConsensusEstablished,
+	} from "../services";
 
 	import FeeSelector from "../components/FeeSelector.svelte";
 	import WordsModal from "../modals/WordsModal.svelte";
@@ -37,7 +42,7 @@
 
 	const handleSubmit = async () => {
 		// TODO: Check pre conditions on inputs
-		await client.waitForConsensusEstablished();
+		await waitForConsensusEstablished();
 		setTimeout(() => showModal.set(WordsModal), 350);
 	};
 

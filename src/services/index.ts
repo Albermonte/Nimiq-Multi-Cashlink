@@ -66,7 +66,7 @@ const walletHasEnoughAmount = async (
 /**
  * Check for consensus
  */
-const waitForConsensusEstablished = async () => {
+export const waitForConsensusEstablished = async () => {
 	const $consensus = get(consensus);
 	if ($consensus !== "established") {
 		showModal.set(ConsensusModal);
