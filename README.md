@@ -2,7 +2,7 @@
 
 [![Donate NIM](https://www.nimiq.com/accept-donations/img/donationBtnImg/orange-small.svg)](https://wallet.nimiq.com/nimiq:NQ65GS91H8CSQFAN1EVSUK3GX7PLL9N1X4KC)
 [![wakatime](https://wakatime.com/badge/github/Albermonte/Nimiq-Multi-Cashlink.svg)](https://wakatime.com/badge/github/Albermonte/Nimiq-Multi-Cashlink)
-[!Website](https://img.shields.io/website?down_message=Offline&up_message=Online&url=https%3A%2F%2Fcashlinks.shortnim.me%2F)
+![Website](https://img.shields.io/website?down_message=Offline&up_message=Online&url=https%3A%2F%2Fcashlinks.shortnim.me%2F)
 
 ## Usage
 
