@@ -40,9 +40,13 @@
 					Head: {$height}
 				</span>
 			{/if}
-			<span>
-				Local Balance: {$balance} NIM
-			</span>
+			{#if $balance}
+				<span>
+					Local Balance: {$balance} NIM
+				</span>
+			{:else}
+				<span> Loading Balance... </span>
+			{/if}
 		</div>
 	{/if}
 </footer>

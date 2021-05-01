@@ -61,8 +61,16 @@ const walletHasEnoughAmount = async (
 	expectedAmount: number,
 ): Promise<boolean> => {
 	const $wallet = get(wallet);
-	const { balance } = await client.getAccount($wallet.address);
-	return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
+	try {
+		const { balance } = await client.getAccount($wallet.address);
+		return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
+	} catch (e) {
+		const res = await fetch(
+			`https://api.nimiq.watch/account/${$wallet.address.toUserFriendlyAddress()}`,
+		);
+		const { balance } = await res.json();
+		return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
+	}
 };
 
 /**

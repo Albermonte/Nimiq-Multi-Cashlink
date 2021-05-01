@@ -55,9 +55,15 @@ export const initNimiq = async () => {
 	});
 
 	await summonWallet();
-	accounts.subscribe(([account]) => {
+	accounts.subscribe(async ([account]) => {
 		const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
-		balance.set(accountBalance);
+		if (isNaN(accountBalance)) {
+			const res = await fetch(
+				`https://api.nimiq.watch/account/${account.address.toUserFriendlyAddress()}`,
+			);
+			const { balance: nimiqWatchBalance } = await res.json();
+			balance.set(Nimiq.Policy.lunasToCoins(nimiqWatchBalance));
+		} else balance.set(accountBalance);
 	});
 };
 

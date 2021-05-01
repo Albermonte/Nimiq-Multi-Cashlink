@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { client } from "nimiq-svelte-stores";
-
 	import { balance, totalAmount, multiCashlink, showModal } from "../store";
 
 	import {
