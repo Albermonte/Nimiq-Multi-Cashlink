@@ -27,6 +27,15 @@ We also store all of your Cashlinks using [IndexedDB](https://developer.mozilla.
 
 And that's all, have fun 😄
 
+## Development
+
+If you want to try it locally, just run:
+
+```bash
+npm install
+npm run dev
+```
+
 ## Authors
 
 [Albermonte](https://github.com/Albermonte) & [Max](https://github.com/onmax)
