@@ -1,6 +1,6 @@
 <!-- https://github.com/nimiq/vue-components/blob/master/src/components/SelectBar.vue -->
 <script lang="ts">
-	import { multiCashlink } from "../store";
+	import { multiCashlink } from "../store"
 
 	const options = [
 		{
@@ -21,34 +21,34 @@
 			text: "express",
 			index: 2,
 		},
-	];
+	]
 
 	interface SelectBarOption {
-		color: string;
-		value: number;
-		text: string;
-		index: number;
+		color: string
+		value: number
+		text: string
+		index: number
 	}
 
 	class SelectBar {
-		public name!: string;
-		public options!: SelectBarOption[];
-		public selectedValue?: number;
-		private selectedOption: SelectBarOption | null = null;
+		public name!: string
+		public options!: SelectBarOption[]
+		public selectedValue?: number
+		private selectedOption: SelectBarOption | null = null
 
 		public get value() {
-			return this.selectedOption!.value;
+			return this.selectedOption!.value
 		}
 
 		public getColor(option: string, index: number) {
-			this.selectedOption = options.find((x) => x.text === option);
+			this.selectedOption = options.find((x) => x.text === option)
 			if (index <= this.selectedOption!.index) {
-				return this.selectedOption!.color;
-			} else return "nq-highlight-bg";
+				return this.selectedOption!.color
+			} else return "nq-highlight-bg"
 		}
 	}
 
-	const selectBar = new SelectBar();
+	const selectBar = new SelectBar()
 </script>
 
 <div class="select-bar">
@@ -62,8 +62,7 @@
 		/>
 		<label
 			for={option.value.toString()}
-			class={`nq-label ${selectBar.getColor($multiCashlink.fee, index)}`}
-			>{option.text}</label
+			class={`nq-label ${selectBar.getColor($multiCashlink.fee, index)}`}>{option.text}</label
 		>
 	{/each}
 </div>
@@ -77,7 +76,7 @@
 		border-radius: 3.75rem;
 		overflow: hidden;
 		width: 100%;
-		margin: 2rem 0;
+		margin: 1rem 0;
 	}
 
 	input {
