@@ -19,6 +19,7 @@
 		"nimiq-svelte-stores": "^1.4.0",
 		"postcss": "^8.2.13",
 		"postcss-load-config": "^3.0.1",
+		"postcss-nesting": "^8.0.0",
 		"rollup": "^2.46.0",
 		"rollup-plugin-css-only": "^3.1.0",
 		"rollup-plugin-livereload": "^2.0.0",
@@ -38,6 +39,7 @@
 		"@nimiq/core-web": "^1.5.8",
 		"@nimiq/hub-api": "^1.4.2-beta.0",
 		"@nimiq/utils": "^0.7.0",
+		"@tailwindcss/typography": "^0.4.0",
 		"sirv-cli": "^1.0.0",
 		"svelte-routing": "^1.6.0",
 		"svelte-simple-modal": "^0.10.1"
