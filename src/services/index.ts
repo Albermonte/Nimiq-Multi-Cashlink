@@ -6,20 +6,20 @@ import Nimiq from "@nimiq/core-web";
 
 import { CashlinkExtraData } from "../model";
 import {
-	wallet,
-	showModal,
-	totalAmount,
-	multiCashlink,
-	latestCashlinks,
-	cashlinkArray,
-	CashlinkStore,
+  wallet,
+  showModal,
+  totalAmount,
+  multiCashlink,
+  latestCashlinks,
+  cashlinkArray,
+  CashlinkStore,
 } from "../store";
 import {
-	isClientReady,
-	fundCashlink,
-	generateCashlink,
-	receiveTxFromUser,
-	getAddressToWithdraw,
+  isClientReady,
+  fundCashlink,
+  generateCashlink,
+  receiveTxFromUser,
+  getAddressToWithdraw,
 } from "./Nimiq";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
@@ -32,67 +32,67 @@ export const isDev: boolean = process.env.dev;
  * Wait until tx is known
  */
 const waitForFunds = async (txhash: string): Promise<void> => {
-	return new Promise(async (resolve) => {
-		try {
-			const tx = await client.getTransaction(txhash);
-			if (tx.state === "mined" || tx.state === "confirmed") resolve();
-		} catch (e) {
-			if (isDev) console.error(e);
-		}
-		const listener = await client.addTransactionListener(
-			(tx) => {
-				if (
-					tx.transactionHash.toHex() === txhash &&
-					(tx.state === "mined" || tx.state === "confirmed")
-				) {
-					client.removeListener(listener);
-					resolve();
-				}
-			},
-			[get(wallet).address],
-		);
-	});
+  return new Promise(async (resolve) => {
+    try {
+      const tx = await client.getTransaction(txhash);
+      if (tx.state === "mined" || tx.state === "confirmed") resolve();
+    } catch (e) {
+      if (isDev) console.error(e);
+    }
+    const listener = await client.addTransactionListener(
+      (tx) => {
+        if (
+          tx.transactionHash.toHex() === txhash &&
+          (tx.state === "mined" || tx.state === "confirmed")
+        ) {
+          client.removeListener(listener);
+          resolve();
+        }
+      },
+      [get(wallet).address]
+    );
+  });
 };
 
 /**
  * Check that the temporal wallet had received the expected amount
  */
 const walletHasEnoughAmount = async (
-	expectedAmount: number,
+  expectedAmount: number
 ): Promise<boolean> => {
-	const $wallet = get(wallet);
-	try {
-		const { balance } = await client.getAccount($wallet.address);
-		return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
-	} catch (e) {
-		const res = await fetch(
-			`https://api.nimiq.watch/account/${$wallet.address.toUserFriendlyAddress()}`,
-		);
-		const { balance } = await res.json();
-		return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
-	}
+  const $wallet = get(wallet);
+  try {
+    const { balance } = await client.getAccount($wallet.address);
+    return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
+  } catch (e) {
+    const res = await fetch(
+      `https://api.nimiq.watch/account/${$wallet.address.toUserFriendlyAddress()}`
+    );
+    const { balance } = await res.json();
+    return Nimiq.Policy.lunasToCoins(balance) >= expectedAmount;
+  }
 };
 
 /**
  * Check for consensus
  */
 export const waitForConsensusEstablished = async () => {
-	const $consensus = get(consensus);
-	if ($consensus !== "established") {
-		showModal.set(ConsensusModal);
-	}
-	await isClientReady();
-	await client.waitForConsensusEstablished();
-	showModal.set(null);
+  const $consensus = get(consensus);
+  if ($consensus !== "established") {
+    showModal.set(ConsensusModal);
+  }
+  await isClientReady();
+  await client.waitForConsensusEstablished();
+  showModal.set(null);
 };
 
 /**
  * Fee in Lunas for different options
  */
 export const feeAmounts = {
-	free: 0,
-	standard: 138,
-	express: 276,
+  free: 0,
+  standard: 138,
+  express: 276,
 };
 
 /**
@@ -100,136 +100,136 @@ export const feeAmounts = {
  * Create cashlinks
  */
 export const createMultiCashlinks = async () => {
-	window.addEventListener("beforeunload", preventReload);
-	const $totalAmount = get(totalAmount);
-	if (!(await walletHasEnoughAmount($totalAmount))) {
-		const txHash = await receiveTxFromUser($totalAmount);
-		showModal.set(WaitForFundsModal);
-		await waitForFunds(txHash);
-		showModal.set(null); // TODO: Notify with native notifications if not focused?
-		if (!(await walletHasEnoughAmount($totalAmount))) {
-			// TODO: Button to claim back balance
-			// TODO: Claim unclaimed Cashlinks
-			console.error(
-				"Oh boi, we have robbed your money because the money you sent is not enough MUAHAHAH. Just kidding, dunno what happened yet, report this pls...",
-				`TotalAmount: ${$totalAmount}`,
-			);
-		}
-	}
-	console.log("Tx received... Creating cashlinks");
+  window.addEventListener("beforeunload", preventReload);
+  const $totalAmount = get(totalAmount);
+  if (!(await walletHasEnoughAmount($totalAmount))) {
+    const txHash = await receiveTxFromUser($totalAmount);
+    showModal.set(WaitForFundsModal);
+    await waitForFunds(txHash);
+    showModal.set(null); // TODO: Notify with native notifications if not focused?
+    if (!(await walletHasEnoughAmount($totalAmount))) {
+      // TODO: Button to claim back balance
+      // TODO: Claim unclaimed Cashlinks
+      console.error(
+        "Oh boi, we have robbed your money because the money you sent is not enough MUAHAHAH. Just kidding, dunno what happened yet, report this pls...",
+        `TotalAmount: ${$totalAmount}`
+      );
+    }
+  }
+  console.log("Tx received... Creating cashlinks");
 
-	const $multiCashlink = get(multiCashlink);
-	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
+  const $multiCashlink = get(multiCashlink);
+  const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
 
-	const cashlinks = Array.from(
-		{ length: $multiCashlink.nTx },
-		(): CashlinkStore => {
-			const cashlink = generateCashlink(amountInLunas, $multiCashlink.message);
+  const cashlinks = Array.from(
+    { length: $multiCashlink.nTx },
+    (): CashlinkStore => {
+      const cashlink = generateCashlink(amountInLunas, $multiCashlink.message);
 
-			const tx = fundCashlink(
-				cashlink,
-				amountInLunas,
-				feeAmounts[$multiCashlink.fee],
-			);
+      const tx = fundCashlink(
+        cashlink,
+        amountInLunas,
+        feeAmounts[$multiCashlink.fee]
+      );
 
-			return {
-				url: cashlink.url,
-				amount: $multiCashlink.amount,
-				...tx,
-				funded: false,
-				claimed: false,
-				message: $multiCashlink.message,
-			};
-		},
-	);
-	latestCashlinks.set(cashlinks);
-	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
+      return {
+        url: cashlink.url,
+        amount: $multiCashlink.amount,
+        ...tx,
+        funded: false,
+        claimed: false,
+        message: $multiCashlink.message,
+      };
+    }
+  );
+  latestCashlinks.set(cashlinks);
+  cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
 
-	console.log("Cashlinks created... Redirecting");
-	window.removeEventListener("beforeunload", preventReload);
-	navigate("/success");
+  console.log("Cashlinks created... Redirecting");
+  window.removeEventListener("beforeunload", preventReload);
+  navigate("/success");
 };
 
 const preventReload = (e) => {
-	e.preventDefault();
-	e.returnValue = "";
+  e.preventDefault();
+  e.returnValue = "";
 };
 
 /**
  * Delete claimed Cashlinks from store
  */
 export const deleteClaimedCashlinks = async () => {
-	await client.waitForConsensusEstablished();
-	const $cashlinkArray = get(cashlinkArray);
-	if (!$cashlinkArray.length) return;
+  await client.waitForConsensusEstablished();
+  const $cashlinkArray = get(cashlinkArray);
+  if (!$cashlinkArray.length) return;
 
-	let array = [];
-	for (const cashlink of $cashlinkArray) {
-		if (cashlink && cashlink.claimed) continue;
-		array.push(cashlink);
-	}
+  let array = [];
+  for (const cashlink of $cashlinkArray) {
+    if (cashlink && cashlink.claimed) continue;
+    array.push(cashlink);
+  }
 
-	array = [...new Set(array.filter((x) => x != null))];
-	cashlinkArray.set(array);
+  array = [...new Set(array.filter((x) => x != null))];
+  cashlinkArray.set(array);
 };
 
 export const deletePendingCashlinks = async () => {
-	await client.waitForConsensusEstablished();
-	const $cashlinkArray = get(cashlinkArray);
-	if (!$cashlinkArray.length) return;
+  await client.waitForConsensusEstablished();
+  const $cashlinkArray = get(cashlinkArray);
+  if (!$cashlinkArray.length) return;
 
-	let array = [];
-	for (const cashlink of $cashlinkArray) {
-		if (cashlink && !cashlink.claimed && !cashlink.funded) continue;
-		array.push(cashlink);
-	}
+  let array = [];
+  for (const cashlink of $cashlinkArray) {
+    if (cashlink && !cashlink.claimed && !cashlink.funded) continue;
+    array.push(cashlink);
+  }
 
-	array = [...new Set(array.filter((x) => x != null))];
-	cashlinkArray.set([...new Set(array)]);
+  array = [...new Set(array.filter((x) => x != null))];
+  cashlinkArray.set([...new Set(array)]);
 };
 
 export const claimUnclaimedCashlinks = async () => {
-	await client.waitForConsensusEstablished();
-	const recipientAddress = await getAddressToWithdraw();
-	const $cashlinkArray = get(cashlinkArray);
-	if (!$cashlinkArray.length) return;
-	const $height = get(height);
+  await client.waitForConsensusEstablished();
+  const recipientAddress = await getAddressToWithdraw();
+  const $cashlinkArray = get(cashlinkArray);
+  if (!$cashlinkArray.length) return;
+  const $height = get(height);
 
-	for (const cashlink of $cashlinkArray) {
-		if (cashlink && cashlink.funded && !cashlink.claimed) {
-			const str = cashlink.url
-				.split("cashlink/#")[1]
-				.replace(/~/g, "")
-				.replace(/=*$/, (match) => new Array(match.length).fill(".").join(""));
-			const buf = Nimiq.BufferUtils.fromBase64Url(str);
-			const keyPair = Nimiq.KeyPair.derive(Nimiq.PrivateKey.unserialize(buf));
-			const value = buf.readUint64();
-			const recipient = Nimiq.Address.fromString(recipientAddress);
-			const transaction = new Nimiq.ExtendedTransaction(
-				Nimiq.Address.fromString(cashlink.recipient), // sender address
-				Nimiq.Account.Type.BASIC, // and account type
-				recipient, // recipient address
-				Nimiq.Account.Type.BASIC, // and type
-				value,
-				0, // fee
-				$height,
-				Nimiq.Transaction.Flag.NONE,
-				CashlinkExtraData.CLAIMING, // the message
-			);
-			const signature = Nimiq.Signature.create(
-				keyPair.privateKey,
-				keyPair.publicKey,
-				transaction.serializeContent(),
-			);
-			const proof = Nimiq.SignatureProof.singleSig(
-				keyPair.publicKey,
-				signature,
-			).serialize();
-			transaction.proof = proof;
+  for (const cashlink of $cashlinkArray) {
+    if (cashlink && cashlink.funded && !cashlink.claimed) {
+      const str = cashlink.url
+        .split("cashlink/#")[1]
+        .replace(/~/g, "")
+        .replace(/=*$/, (match) => new Array(match.length).fill(".").join(""));
+      const buf = Nimiq.BufferUtils.fromBase64Url(str);
+      const keyPair = Nimiq.KeyPair.derive(Nimiq.PrivateKey.unserialize(buf));
+      const value = buf.readUint64();
+      const recipient = Nimiq.Address.fromString(recipientAddress);
+      const transaction = new Nimiq.ExtendedTransaction(
+        Nimiq.Address.fromString(cashlink.recipient), // sender address
+        Nimiq.Account.Type.BASIC, // and account type
+        recipient, // recipient address
+        Nimiq.Account.Type.BASIC, // and type
+        value,
+        0, // fee
+        $height,
+        Nimiq.Transaction.Flag.NONE,
+        CashlinkExtraData.CLAIMING // the message
+      );
+      const signature = Nimiq.Signature.create(
+        keyPair.privateKey,
+        keyPair.publicKey,
+        transaction.serializeContent()
+      );
+      const proof = Nimiq.SignatureProof.singleSig(
+        keyPair.publicKey,
+        signature
+      ).serialize();
+      transaction.proof = proof;
 
-			client.sendTransaction(transaction);
-		}
-	}
+      client.sendTransaction(transaction);
+    }
+  }
 };
 
 /**

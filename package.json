@@ -6,6 +6,7 @@
 		"build": "rollup -c",
 		"dev": "rollup -c -w",
 		"start": "sirv public -s --no-clear",
+		"format": "prettier --write --plugin-search-dir=. ./**/*.{html,ts,svelte}",
 		"validate": "svelte-check"
 	},
 	"devDependencies": {
@@ -19,6 +20,8 @@
 		"nimiq-svelte-stores": "^1.4.0",
 		"postcss": "^8.2.13",
 		"postcss-load-config": "^3.0.1",
+		"prettier": "^2.2.1",
+		"prettier-plugin-svelte": "^2.2.0",
 		"rollup": "^2.46.0",
 		"rollup-plugin-css-only": "^3.1.0",
 		"rollup-plugin-livereload": "^2.0.0",
