@@ -1,16 +1,15 @@
 <script lang="typescript">
+  import { Link, Route, Router } from "svelte-routing";
   import Modal from "svelte-simple-modal";
-  import { Router, Route, Link } from "svelte-routing";
-  import Home from "./pages/Home.svelte";
-  import Success from "./pages/Success.svelte";
+  import Footer from "./Footer.svelte";
   import About from "./pages/About.svelte";
   import History from "./pages/History.svelte";
-  import Footer from "./Footer.svelte";
-  export let url = ""; //This property is necessary declare to avoid ignore the Router
-
+  import Home from "./pages/Home.svelte";
+  import Success from "./pages/Success.svelte";
+  import { initNimiq } from "./services/Nimiq";
   import { showModal } from "./store";
 
-  import { initNimiq } from "./services/Nimiq";
+  export let url = ""; //This property is necessary declare to avoid ignore the Router
   initNimiq();
 </script>
 
@@ -43,9 +42,13 @@
   }}
 />
 
-<style lang="scss">
+<style global>
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
   main {
-    height: calc(100vh - 21px);
+    height: calc(100vh - 25px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;

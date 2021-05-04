@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { client } from "nimiq-svelte-stores";
+
   import { balance, totalAmount, multiCashlink, showModal } from "../store";
 
   import {
@@ -52,10 +54,11 @@
     <h1>Multi Cashlink</h1>
     <form on:submit|preventDefault={handleSubmit}>
       <div class="field-amount">
-        <h4>Amount for each</h4>
+        <h5 for="amount">Amount for each</h5>
         <!-- https://github.com/nimiq/vue-components/blob/master/src/components/AmountInput.vue -->
         <input
           type="number"
+          id="amount"
           step="any"
           min="0.00001"
           name="amount"
@@ -68,9 +71,10 @@
       </div>
 
       <div class="field-amount">
-        <h4>How many Cashlinks are you generating?</h4>
+        <h5 for="nTx">How many Cashlinks are you generating?</h5>
         <input
           type="number"
+          id="nTx"
           name="nTx"
           min="1"
           max={maxCashlinks}
@@ -82,9 +86,12 @@
       </div>
 
       <div class="field-amount">
-        <h4>Message (Optional)</h4>
+        <h5 for="message">
+          Message <span>Optional</span>
+        </h5>
         <input
           type="text"
+          id="message"
           name="message"
           class="nq-input"
           placeholder="Here's a Cashlink for you"
@@ -95,7 +102,7 @@
 
       <div class="field-amount">
         <div>
-          <h4>Network Fee</h4>
+          <h5 for="">Network Fee</h5>
           <FeeSelector />
         </div>
       </div>
@@ -129,13 +136,29 @@
       min-width: 90%;
       max-width: 95%;
     }
+
+    h1 {
+      @apply text-6xl;
+      @apply font-bold;
+      color: var(--nimiq-blue);
+    }
+
     form {
       .field-amount {
         // https://github.com/lunanimous/nim-widgets/blob/7bfd9c70d0f089ab28bf7ac3f69307f829fa4f3f/src/components/donate/donate.css#L365
         position: relative;
 
-        h4 {
-          margin-bottom: 0.5rem;
+        h5 {
+          @apply font-bold;
+          @apply mt-8;
+          color: var(--nimiq-blue);
+
+          span {
+            @apply uppercase;
+            @apply text-gray-400;
+            @apply text-2xl;
+            @apply ml-2;
+          }
         }
 
         input {
