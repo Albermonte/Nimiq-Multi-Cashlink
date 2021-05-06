@@ -1,0 +1,46 @@
+name: ci
+# https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+on: [deployment_status]
+jobs:
+  e2e:
+    # only runs this job on successful deploy
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print URL 🖨
+        run: echo Testing URL ${{ github.event.deployment_status.target_url }}
+
+      - name: Print GitHub env variables 🖨
+        run: npx @bahmutov/print-env GITHUB
+
+      - name: Checkout 🛎
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Reconfigure git to use HTTP authentication
+        run: >
+          git config --global url."https://github.com/".insteadOf
+          ssh://git@github.com/
+
+      - name: Run Cypress 🌲
+        uses: cypress-io/github-action@v2
+        with:
+          command: npm test -- --record
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_BASE_URL: ${{ github.event.deployment_status.target_url }}
+
+      - name: Uploading Screenshots
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - name: Uploading Video
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
