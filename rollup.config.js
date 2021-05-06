@@ -8,6 +8,7 @@ import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import replace from "@rollup/plugin-replace";
 
+const vercelEnv = process.env.VERCEL_ENV;
 const production = !process.env.ROLLUP_WATCH;
 
 function serve() {
@@ -42,7 +43,7 @@ export default {
 	plugins: [
 		replace({
 			preventAssignment: true,
-			'process.env.dev': !production,
+			'process.env.dev': vercelEnv !== undefined ? vercelEnv !== "production" : !production,
 		}),
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),

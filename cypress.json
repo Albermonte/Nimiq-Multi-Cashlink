@@ -1,0 +1,7 @@
+{
+	"baseUrl": "http://localhost:5000/",
+	"fixturesFolder": false,
+	"supportFile": false,
+	"pluginsFile": false,
+	"projectId": "8wbmgj"
+}
