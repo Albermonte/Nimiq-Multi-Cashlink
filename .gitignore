@@ -3,3 +3,6 @@
 
 .DS_Store
 *.psd
+
+/cypress/videos/
+/cypress/screenshots/
