@@ -46,7 +46,7 @@ describe("Test Cashlink Creation", () => {
 		cy.task("getClipboard").should("contain", "https://hub.nimiq-testnet.com/");
 
 		// @ts-ignore
-		cy.compareSnapshot("CashlinksFunded", 0.1);
+		cy.compareSnapshot("CashlinksFunded", 0.15);
 	});
 
 	it("check clipboard cashlink", () => {
