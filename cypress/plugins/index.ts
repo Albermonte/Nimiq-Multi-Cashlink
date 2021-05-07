@@ -1,4 +1,5 @@
 import * as clipboardy from "clipboardy";
+import * as getCompareSnapshotsPlugin from "cypress-visual-regression/dist/plugin";
 
 export default (on, config) => {
 	on("task", {
@@ -6,4 +7,5 @@ export default (on, config) => {
 			return clipboardy.readSync();
 		},
 	});
+	getCompareSnapshotsPlugin(on, config);
 };

@@ -5,20 +5,26 @@ describe("Test Cashlink Creation", () => {
 	it("creates 3 cashlinks", () => {
 		cy.visit("/");
 		window.localStorage.wallet = walletString;
-		cy.get(".consensus-established", { timeout: 60000 }).should("be.visible");
-		cy.screenshot("ConsensusEstablished", { capture: "fullPage" });
 
 		cy.get(".field-amount:nth-child(1) > .nq-input").type("0.00001");
 		cy.get(".field-amount:nth-child(2) > .nq-input").type("3");
 		cy.get(".field-amount:nth-child(3) > .nq-input").type("Testing Multi Cash");
+		cy.get(".consensus-established", { timeout: 60000 }).should("be.visible");
+
+		// @ts-ignore
+		cy.compareSnapshot("ConsensusEstablished", 0.1);
 
 		cy.get(".nq-button").click();
+		// Wait for modal animation
 		cy.wait(500);
-		cy.screenshot("WordsModal", { capture: "fullPage" });
+		// @ts-ignore
+		cy.compareSnapshot("WordsModal", 0.1);
 		cy.get(".nq-button-pill:nth-child(2)").click();
 
 		cy.url().should("contain", "success");
-		cy.screenshot("CashlinksSuccess", { capture: "fullPage" });
+		// @ts-ignore
+		cy.compareSnapshot("CashlinksSuccess", 0.1);
+
 		// Wait so cashlinks txs are sent
 		cy.wait(5 * 1e3);
 	});
@@ -27,14 +33,17 @@ describe("Test Cashlink Creation", () => {
 		cy.visit("/success");
 		window.localStorage.wallet = walletString;
 		cy.get(".consensus-established", { timeout: 60000 }).should("be.visible");
-		cy.screenshot("CheckingCashlinks", { capture: "fullPage" });
+		cy.wait(500);
+		// @ts-ignore
+		cy.compareSnapshot("CheckingCashlinks", 0.1);
 
 		cy.contains("all ready", { timeout: 10 * 60 * 1e3 });
 
 		cy.get(".nq-card:nth-child(4) .nq-icon").click();
 		cy.task("getClipboard").should("contain", "https://hub.nimiq-testnet.com/");
 
-		cy.screenshot("CashlinksFunded", { capture: "fullPage" });
+		// @ts-ignore
+		cy.compareSnapshot("CashlinksFunded", 0.1);
 	});
 
 	it("check clipboard cashlink", () => {

@@ -1,6 +1,10 @@
 {
 	"baseUrl": "http://localhost:5000/",
 	"fixturesFolder": false,
-	"supportFile": false,
-	"projectId": "8wbmgj"
+	"projectId": "8wbmgj",
+	"screenshotsFolder": "./cypress/snapshots/actual",
+	"trashAssetsBeforeRuns": true,
+	"env": {
+		"failSilently": false
+	}
 }

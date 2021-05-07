@@ -7,7 +7,8 @@
 		"dev": "rollup -c -w",
 		"start": "sirv public -s --no-clear",
 		"validate": "svelte-check",
-		"test": "cypress run"
+		"test": "cypress run --env type=actual",
+		"generate:snapshots:base": "cypress run --env type=base --config screenshotsFolder=cypress/snapshots/base"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^18.0.0",
@@ -19,6 +20,7 @@
 		"clipboardy": "^2.3.0",
 		"cssnano": "^5.0.2",
 		"cypress": "^7.2.0",
+		"cypress-visual-regression": "^1.5.7",
 		"nimiq-svelte-stores": "^1.4.0",
 		"postcss": "^8.2.13",
 		"postcss-load-config": "^3.0.1",

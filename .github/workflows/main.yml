@@ -36,7 +36,14 @@ jobs:
         if: always()
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: cypress/snapshots/actual
+
+      - name: Uploading Diff Screenshots
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-regression
+          path: cypress/snapshots/diff
 
       - name: Uploading Video
         uses: actions/upload-artifact@v2
