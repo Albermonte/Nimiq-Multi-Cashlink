@@ -22,9 +22,10 @@ describe("Test Cashlink Creation", () => {
 		cy.get(".nq-button-pill:nth-child(2)").click();
 
 		cy.url().should("contain", "success");
+		// Wait for modal animation
+		cy.wait(500);
 		// @ts-ignore
 		cy.compareSnapshot("CashlinksSuccess", 0.1);
-
 		// Wait so cashlinks txs are sent
 		cy.wait(5 * 1e3);
 	});
@@ -63,7 +64,7 @@ describe("Test Cashlink Creation", () => {
 		cy.screenshot("History", { capture: "fullPage" });
 
 		cy.contains(/(\d+) Cashlinks, (\d+) funded and (\d+) claimed/gm, {
-			timeout: 1 * 60 * 1e3,
+			timeout: 10 * 1e3,
 		});
 	});
 });
