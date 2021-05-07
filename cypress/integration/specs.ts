@@ -9,7 +9,9 @@ describe("Test Cashlink Creation", () => {
 		cy.get(".field-amount:nth-child(1) > .nq-input").type("0.00001");
 		cy.get(".field-amount:nth-child(2) > .nq-input").type("3");
 		cy.get(".field-amount:nth-child(3) > .nq-input").type("Testing Multi Cash");
-		cy.get(".consensus-established", { timeout: 60000 }).should("be.visible");
+		cy.get(".consensus-established", { timeout: 1 * 60 * 1e3 }).should(
+			"be.visible",
+		);
 
 		// @ts-ignore
 		cy.compareSnapshot("ConsensusEstablished", 0.1);
@@ -52,7 +54,7 @@ describe("Test Cashlink Creation", () => {
 			const url = $clip;
 			cy.log("this is what was in clipboard", url);
 			cy.visit(url);
-			cy.contains("0.00001 NIM");
+			cy.contains("0.00001 NIM", { timeout: 1 * 60 * 1e3 }); // Timeout for consensus
 			cy.contains("Testing Multi Cash");
 		});
 	});
