@@ -14,20 +14,20 @@ describe("Test Cashlink Creation", () => {
 		);
 
 		// @ts-ignore
-		cy.compareSnapshot("ConsensusEstablished", 0.1);
+		cy.compareSnapshot("ConsensusEstablished", 0.11);
 
 		cy.get(".nq-button").click();
 		// Wait for modal animation
 		cy.wait(500);
 		// @ts-ignore
-		cy.compareSnapshot("WordsModal", 0.1);
+		cy.compareSnapshot("WordsModal", 0.11);
 		cy.get(".nq-button-pill:nth-child(2)").click();
 
 		cy.url().should("contain", "success");
 		// Wait for modal animation
 		cy.wait(500);
 		// @ts-ignore
-		cy.compareSnapshot("CashlinksSuccess", 0.1);
+		cy.compareSnapshot("CashlinksSuccess", 0.11);
 		// Wait so cashlinks txs are sent
 		cy.wait(5 * 1e3);
 	});
@@ -38,7 +38,7 @@ describe("Test Cashlink Creation", () => {
 		cy.get(".consensus-established", { timeout: 60000 }).should("be.visible");
 		cy.wait(500);
 		// @ts-ignore
-		cy.compareSnapshot("CheckingCashlinks", 0.1);
+		cy.compareSnapshot("CheckingCashlinks", 0.11);
 
 		cy.contains("all ready", { timeout: 10 * 60 * 1e3 });
 
