@@ -1,0 +1,53 @@
+name: main
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Get deployment URL
+        id: deployment
+        uses: dorshinar/get-deployment-url@master
+        timeout-minutes: 5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Necessary to install from github dependency using npm
+      - name: Reconfigure git to use HTTP authentication
+        run: >
+          git config --global url."https://github.com/".insteadOf
+          ssh://git@github.com/
+
+      - name: Run Cypress 🌲
+        uses: cypress-io/github-action@v2
+        with:
+          start: npm start
+          command: npm test -- --record
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_BASE_URL: ${{ steps.deployment.outputs.deployment }}
+
+      - name: Uploading Screenshots
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-screenshots
+          path: cypress/snapshots/actual
+
+      - name: Uploading Diff Screenshots
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-regression
+          path: cypress/snapshots/diff
+
+      - name: Uploading Video
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-videos
+          path: cypress/videos
