@@ -6,7 +6,7 @@
 	 */
 	let privateKeyMnemonic: string[] = [];
 	const nimiqWallet = $wallet;
-	privateKeyMnemonic = Nimiq.MnemonicUtils.entropyToMnemonic(
+	privateKeyMnemonic = Nimiq.MnemonicUtils.entropyToLegacyMnemonic(
 		nimiqWallet.keyPair.privateKey.serialize(),
 	);
 	export const mnemonic = privateKeyMnemonic.join(" ");
@@ -14,7 +14,7 @@
 	const saveMnemonic = () => {
 		let text = "";
 		privateKeyMnemonic.forEach((word, index) => {
-			text += `${index + 1}. ${word}\n`;
+			text += `${word}\n`;
 		});
 		var element = document.createElement("a");
 		element.setAttribute(
