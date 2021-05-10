@@ -3,6 +3,8 @@ const { tailwindExtractor } = require("tailwindcss/lib/lib/purgeUnusedStyles");
 module.exports = {
 	mode: "jit",
 	purge: {
+		enabled: true,
+		preserveHtmlElements: false,
 		content: [
 			"./src/**/*.{html,js,svelte,ts}",
 		],

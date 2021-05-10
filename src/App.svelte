@@ -43,10 +43,6 @@
 />
 
 <style global>
-  @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-
   main {
     height: calc(100vh - 25px);
     display: flex;
