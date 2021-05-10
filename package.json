@@ -3,11 +3,12 @@
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
-		"build": "rollup -c",
+		"build": "npm run build:tailwind && rollup -c",
 		"dev": "rollup -c -w",
 		"start": "sirv public -s --no-clear",
 		"format": "prettier --write --plugin-search-dir=. ./**/*.{html,ts,svelte}",
-		"validate": "svelte-check"
+		"validate": "svelte-check",
+		"build:tailwind": "cross-env NODE_ENV=production postcss src/tailwind.css -o public/global.css"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^18.0.0",
@@ -16,9 +17,11 @@
 		"@rollup/plugin-typescript": "^8.0.0",
 		"@tsconfig/svelte": "^1.0.0",
 		"autoprefixer": "^10.2.5",
+		"cross-env": "^7.0.3",
 		"cssnano": "^5.0.2",
 		"nimiq-svelte-stores": "^1.4.0",
 		"postcss": "^8.2.13",
+		"postcss-cli": "^8.3.1",
 		"postcss-load-config": "^3.0.1",
 		"prettier": "^2.2.1",
 		"prettier-plugin-svelte": "^2.2.0",
