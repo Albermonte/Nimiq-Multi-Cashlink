@@ -36,7 +36,7 @@
 </script>
 
 <div class="nq-card">
-  <div class="container">
+  <div class="container px-12 py-10">
     <div class="index">
       {index + 1}.
     </div>
@@ -81,7 +81,11 @@
   </div>
 </div>
 
-<style lang="scss">
+<style>
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
   .nq-card {
     max-width: max-content;
     min-width: min-content;
@@ -90,7 +94,6 @@
   .container {
     display: flex;
     align-items: center;
-    padding: 1rem 3rem;
     min-width: 75rem;
   }
 
@@ -122,9 +125,6 @@
     display: flex;
     justify-content: center;
     color: var(--nimiq-blue-darkened);
-    svg {
-      cursor: pointer;
-    }
   }
 
   .share {
@@ -132,11 +132,12 @@
     display: flex;
     justify-content: center;
     color: var(--nimiq-blue-darkened);
-    svg {
-      cursor: pointer;
-    }
   }
 
+  .copy svg,
+  .share svg {
+    cursor: pointer;
+  }
   .nq-button-s {
     cursor: auto;
   }
