@@ -3,3 +3,8 @@
 
 .DS_Store
 *.psd
+
+/cypress/videos/
+/cypress/screenshots/
+/cypress/snapshots/actual/
+/cypress/snapshots/diff/
