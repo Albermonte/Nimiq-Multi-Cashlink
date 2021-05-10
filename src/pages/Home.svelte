@@ -1,227 +1,250 @@
 <script lang="ts">
-	import { balance, totalAmount, multiCashlink, showModal } from "../store";
+  import { client } from "nimiq-svelte-stores";
 
-	import {
-		feeAmounts,
-		maxCashlinks,
-		maxFreeCashlinks,
-		waitForConsensusEstablished,
-	} from "../services";
+  import { balance, totalAmount, multiCashlink, showModal } from "../store";
 
-	import FeeSelector from "../components/FeeSelector.svelte";
-	import WordsModal from "../modals/WordsModal.svelte";
+  import {
+    feeAmounts,
+    maxCashlinks,
+    maxFreeCashlinks,
+    waitForConsensusEstablished,
+  } from "../services";
 
-	const UINT8_MAX = 255; // NumberUtils.UINT8_MAX
-	const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
-	const randomAmountTx = (Math.random() * 1000).toFixed(2);
-	let validInput = false;
+  import FeeSelector from "../components/FeeSelector.svelte";
+  import WordsModal from "../modals/WordsModal.svelte";
 
-	multiCashlink.subscribe((multiCashlink) => {
-		const { nTx, amount, fee } = multiCashlink;
+  const UINT8_MAX = 255; // NumberUtils.UINT8_MAX
+  const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
+  const randomAmountTx = (Math.random() * 1000).toFixed(2);
+  let validInput = false;
 
-		// If user has selected "free" fee and wants to generate more that ${maxFreeCashlinks}
-		// then normal fee will be applied
-		if (nTx > maxFreeCashlinks && fee === "free") {
-			// TODO: show msg to user
-			multiCashlink.fee = "standard";
-		}
+  multiCashlink.subscribe((multiCashlink) => {
+    const { nTx, amount, fee } = multiCashlink;
 
-		// Set totalAmount based on user input and temp wallet balance
-		const userAmount =
-			nTx * (amount + feeAmounts[multiCashlink.fee] / 1e5) || 0;
-		const userBalance = $balance || 0;
-		totalAmount.set(
-			Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0),
-		);
+    // If user has selected "free" fee and wants to generate more that ${maxFreeCashlinks}
+    // then normal fee will be applied
+    if (nTx > maxFreeCashlinks && fee === "free") {
+      // TODO: show msg to user
+      multiCashlink.fee = "standard";
+    }
 
-		if (nTx > 0 && amount >= 0.00001) validInput = true;
-		else validInput = false;
-	});
+    // Set totalAmount based on user input and temp wallet balance
+    const userAmount =
+      nTx * (amount + feeAmounts[multiCashlink.fee] / 1e5) || 0;
+    const userBalance = $balance || 0;
+    totalAmount.set(
+      Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0)
+    );
 
-	const handleSubmit = async () => {
-		// TODO: Check pre conditions on inputs
-		await waitForConsensusEstablished();
-		setTimeout(() => showModal.set(WordsModal), 350);
-	};
+    if (nTx > 0 && amount >= 0.00001) validInput = true;
+    else validInput = false;
+  });
 
-	document.title = "Multi Cashlink";
+  const handleSubmit = async () => {
+    // TODO: Check pre conditions on inputs
+    await waitForConsensusEstablished();
+    setTimeout(() => showModal.set(WordsModal), 350);
+  };
+
+  document.title = "Multi Cashlink";
 </script>
 
 <main>
-	<div class="container">
-		<h1>Multi Cashlink</h1>
-		<form on:submit|preventDefault={handleSubmit}>
-			<div class="field-amount">
-				<h4>Amount for each</h4>
-				<!-- https://github.com/nimiq/vue-components/blob/master/src/components/AmountInput.vue -->
-				<input
-					type="number"
-					step="any"
-					min="0.00001"
-					name="amount"
-					class="nq-input"
-					placeholder={randomAmountTx}
-					bind:value={$multiCashlink.amount}
-					required
-				/>
-				<div class="nim-label">NIM</div>
-			</div>
+  <div class="container">
+    <h1>Multi Cashlink</h1>
+    <form on:submit|preventDefault={handleSubmit}>
+      <div class="field-amount">
+        <h5 for="amount">Amount for each</h5>
+        <!-- https://github.com/nimiq/vue-components/blob/master/src/components/AmountInput.vue -->
+        <input
+          type="number"
+          id="amount"
+          step="any"
+          min="0.00001"
+          name="amount"
+          class="nq-input"
+          placeholder={randomAmountTx}
+          bind:value={$multiCashlink.amount}
+          required
+        />
+        <div class="nim-label">NIM</div>
+      </div>
 
-			<div class="field-amount">
-				<h4>How many Cashlinks are you generating?</h4>
-				<input
-					type="number"
-					name="nTx"
-					min="1"
-					max={maxCashlinks}
-					class="nq-input"
-					placeholder={randomNTx}
-					bind:value={$multiCashlink.nTx}
-					required
-				/>
-			</div>
+      <div class="field-amount">
+        <h5 for="nTx">How many Cashlinks are you generating?</h5>
+        <input
+          type="number"
+          id="nTx"
+          name="nTx"
+          min="1"
+          max={maxCashlinks}
+          class="nq-input"
+          placeholder={randomNTx}
+          bind:value={$multiCashlink.nTx}
+          required
+        />
+      </div>
 
-			<div class="field-amount">
-				<h4>Message (Optional)</h4>
-				<input
-					type="text"
-					name="message"
-					class="nq-input"
-					placeholder="Here's a Cashlink for you"
-					maxlength={UINT8_MAX}
-					bind:value={$multiCashlink.message}
-				/>
-			</div>
+      <div class="field-amount">
+        <h5 for="message">
+          Message <span>Optional</span>
+        </h5>
+        <input
+          type="text"
+          id="message"
+          name="message"
+          class="nq-input"
+          placeholder="Here's a Cashlink for you"
+          maxlength={UINT8_MAX}
+          bind:value={$multiCashlink.message}
+        />
+      </div>
 
-			<div class="field-amount">
-				<div>
-					<h4>Network Fee</h4>
-					<FeeSelector />
-				</div>
-			</div>
-			<div class="bottom">
-				<h3>
-					<span class="total">Total:</span> <span>{$totalAmount} NIM</span>
-				</h3>
-				<button
-					class="nq-button light-blue"
-					disabled={!validInput}
-					type="submit"
-				>
-					Create Cashlinks
-				</button>
-			</div>
-		</form>
-	</div>
+      <div class="field-amount">
+        <div>
+          <h5 for="">Network Fee</h5>
+          <FeeSelector />
+        </div>
+      </div>
+      <div class="bottom">
+        <h3>
+          <span class="total">Total:</span> <span>{$totalAmount} NIM</span>
+        </h3>
+        <button
+          class="nq-button light-blue"
+          disabled={!validInput}
+          type="submit"
+        >
+          Create Cashlinks
+        </button>
+      </div>
+    </form>
+  </div>
 </main>
 
 <style lang="scss">
-	main {
-		display: grid;
-		place-items: center;
-		height: 100%;
-	}
+  main {
+    display: grid;
+    place-items: center;
+    height: 100%;
+  }
 
-	.container {
-		min-height: 70vh;
-		min-width: 56rem;
-		@media only screen and (hover: none) and (pointer: coarse) {
-			min-width: 90%;
-			max-width: 95%;
-		}
-		form {
-			.field-amount {
-				// https://github.com/lunanimous/nim-widgets/blob/7bfd9c70d0f089ab28bf7ac3f69307f829fa4f3f/src/components/donate/donate.css#L365
-				position: relative;
+  .container {
+    min-height: 70vh;
+    min-width: 56rem;
+    @media only screen and (hover: none) and (pointer: coarse) {
+      min-width: 90%;
+      max-width: 95%;
+    }
 
-				h4 {
-					margin-bottom: 0.5rem;
-				}
+    h1 {
+      @apply text-6xl;
+      @apply font-bold;
+      color: var(--nimiq-blue);
+    }
 
-				input {
-					width: 100%;
-					box-sizing: border-box;
-					padding: 12px;
-					border: solid 1px var(--nimiq-gray);
-					// color: var(--nimiq-light-blue-darkened);
-					background: 0 0;
-					border-radius: 8px;
-					outline: 0;
-					transition: color 0.2s ease, border 0.2s ease;
-					background-clip: padding-box;
-				}
+    form {
+      .field-amount {
+        // https://github.com/lunanimous/nim-widgets/blob/7bfd9c70d0f089ab28bf7ac3f69307f829fa4f3f/src/components/donate/donate.css#L365
+        position: relative;
 
-				input:focus {
-					border-color: var(--nimiq-highlight-bg);
-				}
+        h5 {
+          @apply font-bold;
+          @apply mt-8;
+          color: var(--nimiq-blue);
 
-				.nim-label {
-					display: block;
-					position: absolute;
-					right: 12px;
-					top: 50%;
-					bottom: 50%;
-					margin: 0;
-					padding: 0;
-					font-size: 16px;
-					font-weight: 600;
-					letter-spacing: 0.08em;
-					opacity: 0.55;
-					transition: opacity 0.2s ease-out;
-					color: var(--nimiq-light-blue);
-				}
-			}
-		}
+          span {
+            @apply uppercase;
+            @apply text-gray-400;
+            @apply text-2xl;
+            @apply ml-2;
+          }
+        }
 
-		.bottom {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			h3 {
-				font-size: 1.25em;
-				font-weight: bold;
-				margin-right: 2rem;
+        input {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 12px;
+          border: solid 1px var(--nimiq-gray);
+          // color: var(--nimiq-light-blue-darkened);
+          background: 0 0;
+          border-radius: 8px;
+          outline: 0;
+          transition: color 0.2s ease, border 0.2s ease;
+          background-clip: padding-box;
+        }
 
-				@media only screen and (hover: none) and (pointer: coarse) {
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					align-items: center;
-					margin-left: 2rem;
-					span {
-						font-size: 1em;
-						text-align: center;
-					}
-				}
+        input:focus {
+          border-color: var(--nimiq-highlight-bg);
+        }
 
-				.total {
-					color: #ccc;
-					font-size: 0.9em;
-				}
-			}
+        .nim-label {
+          display: block;
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          bottom: 50%;
+          margin: 0;
+          padding: 0;
+          font-size: 16px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          opacity: 0.55;
+          transition: opacity 0.2s ease-out;
+          color: var(--nimiq-light-blue);
+        }
+      }
+    }
 
-			button {
-				margin: 2em 0;
-			}
-		}
-	}
+    .bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      h3 {
+        font-size: 1.25em;
+        font-weight: bold;
+        margin-right: 2rem;
 
-	.nq-button {
-		height: 5.5rem;
-		padding: 0 1rem;
-		font-size: 1.75rem;
-	}
+        @media only screen and (hover: none) and (pointer: coarse) {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          margin-left: 2rem;
+          span {
+            font-size: 1em;
+            text-align: center;
+          }
+        }
 
-	// Hide arrows from input: https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp
-	/* Chrome, Safari, Edge, Opera */
-	input::-webkit-outer-spin-button,
-	input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
+        .total {
+          color: #ccc;
+          font-size: 0.9em;
+        }
+      }
 
-	/* Firefox */
-	input[type="number"] {
-		-moz-appearance: textfield;
-	}
+      button {
+        margin: 2em 0;
+      }
+    }
+  }
+
+  .nq-button {
+    height: 5.5rem;
+    padding: 0 1rem;
+    font-size: 1.75rem;
+  }
+
+  // Hide arrows from input: https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 </style>

@@ -46,7 +46,15 @@ export default {
 			'process.env.dev': vercelEnv !== undefined ? vercelEnv !== "production" : !production,
 		}),
 		svelte({
-			preprocess: sveltePreprocess({ sourceMap: !production }),
+			preprocess: sveltePreprocess({
+				sourceMap: !production,
+				postcss: {
+					plugins: [
+						require("tailwindcss"),
+						require("autoprefixer")
+					],
+				},
+			}),
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production,
