@@ -12,10 +12,7 @@
 	export const mnemonic = privateKeyMnemonic.join(" ");
 
 	const saveMnemonic = () => {
-		let text = "";
-		privateKeyMnemonic.forEach((word, index) => {
-			text += `${word}\n`;
-		});
+		const text = privateKeyMnemonic.join('\n');
 		const element = document.createElement("a");
 		element.setAttribute(
 			"href",
