@@ -15,6 +15,7 @@
 	const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
 	const randomAmountTx = (Math.random() * 1000).toFixed(2);
 	let validInput = false;
+	let amountToPay = 0;
 
 	multiCashlink.subscribe((multiCashlink) => {
 		const { nTx, amount, fee } = multiCashlink;
@@ -31,8 +32,9 @@
 			nTx * (amount + feeAmounts[multiCashlink.fee] / 1e5) || 0;
 		const userBalance = $balance || 0;
 		totalAmount.set(
-			Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0),
+			Math.max(Math.round((userAmount) * 1e5) / 1e5, 0),
 		);
+		amountToPay = Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0)
 
 		if (nTx > 0 && amount >= 0.00001) validInput = true;
 		else validInput = false;
@@ -101,7 +103,7 @@
 			</div>
 			<div class="bottom">
 				<h3>
-					<span class="total">Total:</span> <span>{$totalAmount} NIM</span>
+					<span class="total">Total:</span> <span>{amountToPay} NIM</span>
 				</h3>
 				<button
 					class="nq-button light-blue"
