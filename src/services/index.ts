@@ -9,6 +9,7 @@ import {
 	wallet,
 	showModal,
 	totalAmount,
+	amountToPay,
 	multiCashlink,
 	latestCashlinks,
 	cashlinkArray,
@@ -102,8 +103,9 @@ export const feeAmounts = {
 export const createMultiCashlinks = async () => {
 	window.addEventListener("beforeunload", preventReload);
 	const $totalAmount = get(totalAmount);
+	const $amountToPay = get(amountToPay);
 	if (!(await walletHasEnoughAmount($totalAmount))) {
-		const txHash = await receiveTxFromUser($totalAmount);
+		const txHash = await receiveTxFromUser($amountToPay);
 		showModal.set(WaitForFundsModal);
 		await waitForFunds(txHash);
 		showModal.set(null); // TODO: Notify with native notifications if not focused?
