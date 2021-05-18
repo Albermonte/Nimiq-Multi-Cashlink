@@ -1,6 +1,7 @@
 import Nimiq from "@nimiq/core-web";
 import HubApi from "@nimiq/hub-api";
 import { Utf8Tools } from "@nimiq/utils";
+import type { Client } from "@nimiq/core-web/types";
 
 import {
 	start,
@@ -165,11 +166,16 @@ export const generateCashlink = (amount: number, message: string): Cashlink => {
 	};
 };
 
-export const fundCashlink = (
+export const fundCashlink = async (
 	cashlink: Cashlink,
 	amount: number,
 	fee: number,
-) => {
+): Promise<{
+	transactionDetails: Client.TransactionDetails;
+	txhash: string;
+	validityStartHeight: number;
+	recipient: string;
+}> => {
 	const $height = get(height);
 	const $wallet = get(wallet);
 
@@ -194,9 +200,10 @@ export const fundCashlink = (
 	const proof = Nimiq.SignatureProof.singleSig(keyPair.publicKey, signature);
 	tx.proof = proof.serialize();
 
-	client.sendTransaction(tx);
+	const transactionDetails = await client.sendTransaction(tx);
 
 	return {
+		transactionDetails: transactionDetails,
 		txhash: tx.hash().toHex(),
 		validityStartHeight: $height, // If current height > start height + 10 -> Resend Tx TODO:
 		recipient: cashlink.address,

@@ -4,13 +4,14 @@ import {
 	indexedDBStorage,
 	PersistentStore,
 } from "@macfja/svelte-persistent-store";
-import type { Wallet } from "@nimiq/core-web/types";
+import type { Wallet, Client } from "@nimiq/core-web/types";
 import type { Writable } from "svelte/store";
 import type { MultiCashlink } from "./model";
 
 export interface CashlinkStore {
 	url: string;
 	amount: number;
+	transactionDetails: Client.TransactionDetails;
 	txhash: string;
 	recipient: string;
 	validityStartHeight: number;

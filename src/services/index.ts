@@ -114,7 +114,6 @@ export const createMultiCashlinks = async () => {
 		const txHash = await receiveTxFromUser($amountToPay);
 		showModal.set(WaitForFundsModal);
 		await waitForFunds(txHash);
-		showModal.set(null); // TODO: Notify with native notifications if not focused?
 		if (!(await walletHasEnoughAmount($totalAmount))) {
 			// TODO: Button to claim back balance
 			// TODO: Claim unclaimed Cashlinks
@@ -123,33 +122,43 @@ export const createMultiCashlinks = async () => {
 				`TotalAmount: ${$totalAmount}`,
 			);
 		}
+	} else {
+		showModal.set(WaitForFundsModal);
 	}
+
 	console.log("Tx received... Creating cashlinks");
 
 	const $multiCashlink = get(multiCashlink);
 	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
 
-	const cashlinks = Array.from(
-		{ length: $multiCashlink.nTx },
-		(): CashlinkStore => {
-			const cashlink = generateCashlink(amountInLunas, $multiCashlink.message);
+	const cashlinks = await Promise.all(
+		Array.from(
+			{ length: $multiCashlink.nTx },
+			async (): Promise<CashlinkStore> => {
+				const cashlink = generateCashlink(
+					amountInLunas,
+					$multiCashlink.message,
+				);
 
-			const tx = fundCashlink(
-				cashlink,
-				amountInLunas,
-				feeAmounts[$multiCashlink.fee],
-			);
+				const tx = await fundCashlink(
+					cashlink,
+					amountInLunas,
+					feeAmounts[$multiCashlink.fee],
+				);
 
-			return {
-				url: cashlink.url,
-				amount: $multiCashlink.amount,
-				...tx,
-				funded: false,
-				claimed: false,
-				message: $multiCashlink.message,
-			};
-		},
+				return {
+					url: cashlink.url,
+					amount: $multiCashlink.amount,
+					...tx,
+					funded: false,
+					claimed: false,
+					message: $multiCashlink.message,
+				};
+			},
+		),
 	);
+	showModal.set(null); // TODO: Notify with native notifications if not focused?
+
 	latestCashlinks.set(cashlinks);
 	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
 
@@ -254,7 +263,7 @@ export const maxFreeCashlinks = Nimiq.Mempool.FREE_TRANSACTIONS_PER_SENDER_MAX;
 FLOW:
 
 1. Previo:
-	1.1 Consenso 
+	1.1 Consenso
 	1.2 crear/cargar wallet
 2. wallet temporal:
 	2.1 eneseña palabras
@@ -264,5 +273,5 @@ FLOW:
 	3.1 crear los cashlink
 	3.2 mostrar a usuario cashlinks
 	3.3 guardar en localStorage
-	
+
 **/
