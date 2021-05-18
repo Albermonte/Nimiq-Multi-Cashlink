@@ -40,7 +40,10 @@ export const initNimiq = async () => {
 	await Nimiq.load(workerURL);
 	await start(
 		(config: Nimiq.ClientConfigurationBuilder) => {
-			// config.feature(Nimiq.Client.Feature.MEMPOOL);
+			// Create a volatile consensus (not storing peer information across page reloads)
+			// Seems faster and don't takes space on the user device
+			config.volatile(true);
+			config.feature(Nimiq.Client.Feature.MEMPOOL);
 		},
 		{
 			network: isDev ? "test" : "main",
