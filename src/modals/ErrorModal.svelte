@@ -1,26 +1,24 @@
 <script lang="ts">
 	import { showModal } from "../store";
 
-  export let errorMessage: string;
+	export let errorMessage: string;
 	export let handleRetry: Function;
 	export let handleRetryText: string;
 </script>
 
 <div class="container">
 	<h2 class="header nq-h2">Ups, an unexpected error happened</h2>
-	<p class="words">{errorMessage || "¯\\_(ツ)_/¯"}</p>
-	<div class="footer" style="justify-content: { handleRetry ? 'space-between' : 'center' }">
-		<button class="nq-button-pill red" on:click={() => showModal.set(null)}
-			>Close</button
-		>
+	<p class="message">{errorMessage || "¯\\_(ツ)_/¯"}</p>
+	<div class="footer" style="justify-content: {handleRetry ? 'space-between' : 'center'}">
+		<button class="nq-button-pill red" on:click={() => showModal.set(null)}>Close</button>
 		{#if handleRetry}
-		<button
-			class="nq-button-pill light-blue"
-			on:click={() => {
-				showModal.set(null);
-				handleRetry();
-			}}>{handleRetryText}</button
-		>
+			<button
+				class="nq-button-pill light-blue"
+				on:click={() => {
+					showModal.set(null);
+					handleRetry();
+				}}>{handleRetryText}</button
+			>
 		{/if}
 	</div>
 </div>
@@ -41,27 +39,7 @@
 			height: 5rem;
 		}
 
-		.download {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			height: 3rem;
-		}
-
-		.save-button {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding-left: 2.1rem;
-
-			svg {
-				width: 18px;
-				height: 18px;
-				margin-left: 0.7rem;
-			}
-		}
-
-		.words {
+		.message {
 			text-align: center;
 		}
 
