@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { balance, totalAmount, multiCashlink, showModal } from "../store";
+	import { balance, totalAmount, amountToPay, multiCashlink, showModal } from "../store";
 
 	import {
 		feeAmounts,
@@ -15,7 +15,6 @@
 	const randomNTx = `${Math.floor(Math.random() * 8) + 2}`;
 	const randomAmountTx = (Math.random() * 1000).toFixed(2);
 	let validInput = false;
-	let amountToPay = 0;
 
 	multiCashlink.subscribe((multiCashlink) => {
 		const { nTx, amount, fee } = multiCashlink;
@@ -34,7 +33,7 @@
 		totalAmount.set(
 			Math.max(Math.round((userAmount) * 1e5) / 1e5, 0),
 		);
-		amountToPay = Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0)
+		amountToPay.set(Math.max(Math.round((userAmount - userBalance) * 1e5) / 1e5, 0))
 
 		if (nTx > 0 && amount >= 0.00001) validInput = true;
 		else validInput = false;
@@ -103,7 +102,7 @@
 			</div>
 			<div class="bottom">
 				<h3>
-					<span class="total">Total:</span> <span>{amountToPay} NIM</span>
+					<span class="total">Total:</span> <span>{$amountToPay} NIM</span>
 				</h3>
 				<button
 					class="nq-button light-blue"

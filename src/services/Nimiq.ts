@@ -11,12 +11,16 @@ import {
 	ready,
 } from "nimiq-svelte-stores";
 import { get } from "svelte/store";
+import { bind } from "svelte-simple-modal";
 
 import { wallet, balance, showModal } from "../store";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
+import ErrorModal from "../modals/ErrorModal.svelte";
 import { CashlinkExtraData } from "../model";
 import type { Cashlink } from "../model";
+
+import { createMultiCashlinks } from ".";
 
 //@ts-ignore
 export const isDev: boolean = process.env.dev;
@@ -115,8 +119,24 @@ export const receiveTxFromUser = async (totalAmount: number) => {
 		return signedTx.hash;
 	} catch (e) {
 		if (e.toString() === "Error: CANCELED") showModal.set(null);
+		if (e.toString() === "Error: Failed to open popup") {
+			showModal.set(null);
+			const errorMessage =
+				"Failed to open popup window, make sure your browser allows them";
+			const handleRetryText = "Try again";
+			setTimeout(() => {
+				showModal.set(
+					bind(ErrorModal, {
+						errorMessage,
+						handleRetryText,
+						handleRetry: createMultiCashlinks,
+					}),
+				);
+			}, 500);
+		}
+		console.log(e.toString());
 		// TODO: Handle error
-		throw new Error("Canceled");
+		throw e;
 	}
 };
 
