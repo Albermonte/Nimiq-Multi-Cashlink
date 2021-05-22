@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
 	import { Link } from "svelte-routing";
-	import { height, client } from "nimiq-svelte-stores";
+	import { height, client, newTransaction } from "nimiq-svelte-stores";
 	import Nimiq from "@nimiq/core-web";
 	import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 	const { Client } = Nimiq;
 
-	import { latestCashlinks, cashlinkArray, wallet } from "../store";
+	import { latestCashlinks, cashlinkArray } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
 
@@ -17,6 +17,18 @@
 	let fundedAmount = 0;
 	let allFunded = false;
 	let cashlinks: Array<CashlinkStore> = [];
+
+	const updateTitle = () => {
+		if (cashlinks.length === fundedAmount) {
+			allFunded = true;
+			document.title = "Ready to share";
+			updateStore();
+		} else {
+			allFunded = false;
+			document.title = `${fundedAmount}/${cashlinks.length} funded`;
+		}
+	};
+	
 	const latestUnsubscribe = latestCashlinks.subscribe(($) => {
 		fundedAmount = 0;
 		cashlinks = $;
@@ -24,9 +36,9 @@
 			if (x.funded) fundedAmount++;
 		});
 	});
-
-	const onTransaction = (txDetails: ClientTransactionDetails) => {
-		if (txDetails.sender.equals($wallet.address)) {
+	
+	const newTransactionUnsubscribe = newTransaction.subscribe((txDetails: ClientTransactionDetails) => {
+		if(txDetails){
 			switch (txDetails.state) {
 				case Nimiq.Client.TransactionState.MINED:
 					// Transaction has been confirmed once
@@ -43,11 +55,11 @@
 					console.log(`${txDetails.transactionHash.toHex()} Expired`);
 					break;
 				case Nimiq.Client.TransactionState.INVALIDATED:
-					console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
+						console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
 					break;
 			}
 		}
-	};
+	})
 
 	// Check every cashlink state on head change
 	const heightUnsubscribe = height.subscribe(async () => {
@@ -127,29 +139,9 @@
 		$latestCashlinks = cashlinks;
 	};
 
-	const updateTitle = () => {
-		if (cashlinks.length === fundedAmount) {
-			allFunded = true;
-			document.title = "Ready to share";
-			updateStore();
-		} else {
-			allFunded = false;
-			document.title = `${fundedAmount}/${cashlinks.length} funded`;
-		}
-	};
-
-	let txlistener = null;
-	onMount(async () => {
-		await isClientReady();
-		txlistener = await client.addTransactionListener(onTransaction, [
-			$wallet.address,
-		]);
-		updateTitle();
-	});
-
 	// Unsubscribe when leaving page
 	onDestroy(() => {
-		client.removeListener(txlistener);
+		newTransactionUnsubscribe();
 		heightUnsubscribe();
 		latestUnsubscribe();
 	});
