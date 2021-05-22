@@ -1,14 +1,16 @@
 import { get } from "svelte/store";
 import { navigate } from "svelte-routing";
 
-import { client, consensus, height } from "nimiq-svelte-stores";
+import { client, consensus, height, newTransaction } from "nimiq-svelte-stores";
 import Nimiq from "@nimiq/core-web";
+import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 
 import { CashlinkExtraData } from "../model";
 import {
 	wallet,
 	showModal,
 	totalAmount,
+	amountToPay,
 	multiCashlink,
 	latestCashlinks,
 	cashlinkArray,
@@ -33,23 +35,28 @@ export const isDev: boolean = process.env.dev;
  */
 const waitForFunds = async (txhash: string): Promise<void> => {
 	return new Promise(async (resolve) => {
-		try {
-			const tx = await client.getTransaction(txhash);
-			if (tx.state === "mined" || tx.state === "confirmed") resolve();
-		} catch (e) {
-			if (isDev) console.error(e);
-		}
-		const listener = await client.addTransactionListener(
-			(tx) => {
-				if (
-					tx.transactionHash.toHex() === txhash &&
-					(tx.state === "mined" || tx.state === "confirmed")
-				) {
-					client.removeListener(listener);
-					resolve();
+		const newTransactionUnsubscribe = newTransaction.subscribe(
+			(txDetails: ClientTransactionDetails) => {
+				if (txDetails && txDetails.transactionHash.toHex() === txhash) {
+					switch (txDetails.state) {
+						case Nimiq.Client.TransactionState.MINED:
+							// Transaction has been confirmed once
+							newTransactionUnsubscribe();
+							resolve();
+							break;
+						case Nimiq.Client.TransactionState.EXPIRED:
+							console.log(`${txDetails.transactionHash.toHex()} Expired`);
+							// TODO: catch error
+							throw new Error(`${txDetails.transactionHash.toHex()} Expired`);
+						case Nimiq.Client.TransactionState.INVALIDATED:
+							console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
+							// TODO: catch error
+							throw new Error(
+								`${txDetails.transactionHash.toHex()} Invaldiated`,
+							);
+					}
 				}
 			},
-			[get(wallet).address],
 		);
 	});
 };
@@ -91,8 +98,8 @@ export const waitForConsensusEstablished = async () => {
  */
 export const feeAmounts = {
 	free: 0,
-	standard: 138,
-	express: 276,
+	standard: 166 + 5, // Standard fee for Extended TX + Message length
+	express: 2 * (166 + 5), // Double than the Standard fee
 };
 
 /**
@@ -102,8 +109,9 @@ export const feeAmounts = {
 export const createMultiCashlinks = async () => {
 	window.addEventListener("beforeunload", preventReload);
 	const $totalAmount = get(totalAmount);
+	const $amountToPay = get(amountToPay);
 	if (!(await walletHasEnoughAmount($totalAmount))) {
-		const txHash = await receiveTxFromUser($totalAmount);
+		const txHash = await receiveTxFromUser($amountToPay);
 		showModal.set(WaitForFundsModal);
 		await waitForFunds(txHash);
 		showModal.set(null); // TODO: Notify with native notifications if not focused?
