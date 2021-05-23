@@ -131,31 +131,26 @@ export const createMultiCashlinks = async () => {
 	const $multiCashlink = get(multiCashlink);
 	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
 
-	const cashlinks = await Promise.all(
-		Array.from(
-			{ length: $multiCashlink.nTx },
-			async (): Promise<CashlinkStore> => {
-				const cashlink = generateCashlink(
-					amountInLunas,
-					$multiCashlink.message,
-				);
+	const cashlinks = Array.from(
+		{ length: $multiCashlink.nTx },
+		(): CashlinkStore => {
+			const cashlink = generateCashlink(amountInLunas, $multiCashlink.message);
 
-				const tx = await fundCashlink(
-					cashlink,
-					amountInLunas,
-					feeAmounts[$multiCashlink.fee],
-				);
+			const tx = fundCashlink(
+				cashlink,
+				amountInLunas,
+				feeAmounts[$multiCashlink.fee],
+			);
 
-				return {
-					url: cashlink.url,
-					amount: $multiCashlink.amount,
-					...tx,
-					funded: false,
-					claimed: false,
-					message: $multiCashlink.message,
-				};
-			},
-		),
+			return {
+				url: cashlink.url,
+				amount: $multiCashlink.amount,
+				...tx,
+				funded: false,
+				claimed: false,
+				message: $multiCashlink.message,
+			};
+		},
 	);
 	showModal.set(null); // TODO: Notify with native notifications if not focused?
 

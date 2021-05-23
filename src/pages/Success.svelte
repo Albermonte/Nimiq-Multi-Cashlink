@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
 	import { Link } from "svelte-routing";
-	import { height, client, newTransaction } from "nimiq-svelte-stores";
+	import { height, client, transactions } from "nimiq-svelte-stores";
 	import Nimiq from "@nimiq/core-web";
 	import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 	const { Client } = Nimiq;
@@ -18,51 +18,86 @@
 	let allFunded = false;
 	let cashlinks: Array<CashlinkStore> = [];
 
+	const updateStore = () => {
+		console.log("Updating Store");
+		cashlinks.forEach((x) => {
+			const index = $cashlinkArray.findIndex((cashlink) => cashlink.tx.transactionHash === x.tx.transactionHash);
+			$cashlinkArray[index] = x;
+		});
+
+		// Force Svelte to update store
+		$cashlinkArray = $cashlinkArray;
+		$latestCashlinks = cashlinks;
+	};
+
 	const updateTitle = () => {
 		if (cashlinks.length === fundedAmount) {
 			allFunded = true;
 			document.title = "Ready to share";
-			updateStore();
 		} else {
 			allFunded = false;
 			document.title = `${fundedAmount}/${cashlinks.length} funded`;
 		}
 	};
-	
+
 	const latestUnsubscribe = latestCashlinks.subscribe(($) => {
+		if (!$.length) return;
 		fundedAmount = 0;
 		cashlinks = $;
 		cashlinks.forEach((x) => {
 			if (x.funded) fundedAmount++;
 		});
 	});
-	
-	const newTransactionUnsubscribe = newTransaction.subscribe((txDetails: ClientTransactionDetails) => {
-		if(txDetails){
-			switch (txDetails.state) {
-				case Nimiq.Client.TransactionState.MINED:
-					// Transaction has been confirmed once
-					cashlinks.forEach((cashlink, index) => {
-						if (cashlink.txhash === txDetails.transactionHash.toHex()) {
+
+	const transactionsUnsubscribe = transactions.subscribe((txArray) => {
+		fundedAmount = 0;
+		txArray.forEach(async (txDetails: ClientTransactionDetails) => {
+			if (txDetails) {
+				switch (txDetails.state) {
+					case Nimiq.Client.TransactionState.MINED: {
+						// Transaction has been confirmed once
+						const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+						if (index >= 0) {
 							fundedAmount++;
-							cashlink.funded = true;
-							cashlinks[index] = cashlink;
+							cashlinks[index].funded = true;
+							updateTitle();
 						}
-					});
-					updateTitle();
-					break;
-				case Nimiq.Client.TransactionState.EXPIRED:
-					console.log(`${txDetails.transactionHash.toHex()} Expired`);
-					break;
-				case Nimiq.Client.TransactionState.INVALIDATED:
-						console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
-					break;
+						break;
+					}
+					case Nimiq.Client.TransactionState.CONFIRMED: {
+						// Transaction has been confirmed ten times
+						const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+						if (index >= 0) {
+							fundedAmount++;
+							cashlinks[index].funded = true;
+							updateTitle();
+						}
+						break;
+					}
+					case Nimiq.Client.TransactionState.EXPIRED:
+						console.log(`${txDetails.transactionHash.toHex()} Expired`);
+						break;
+					case Nimiq.Client.TransactionState.INVALIDATED:
+						console.log(`${txDetails.transactionHash.toHex()} Invalidated`);
+						const tx = await client.getTransaction(txDetails.transactionHash.toHex());
+						if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
+							const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+							if (index >= 0) {
+								fundedAmount++;
+								cashlinks[index].funded = true;
+								updateTitle();
+							}
+						}
+						break;
+				}
 			}
-		}
-	})
+		});
+	});
 
 	// Check every cashlink state on head change
 	const heightUnsubscribe = height.subscribe(async () => {
+		updateStore();
+		return;
 		// Wait 1 second before checking so the page can be loaded
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 		await isClientReady();
@@ -87,22 +122,16 @@
 						// TODO: Check if not mined or node didn't share info with us
 						cashlinks[i] = cashlink;
 					} else {
-						const tx = await client.getTransaction(cashlink.txhash);
-						if (
-							tx.state === Client.TransactionState.MINED ||
-							tx.state === Client.TransactionState.CONFIRMED
-						) {
+						const tx = await client.getTransaction(cashlink.tx.transactionHash);
+						if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
 							cashlink.funded = true;
 							cashlinks[i] = cashlink;
 						}
 					}
 				} catch (e) {
-					if (
-						e.toString().includes("Failed to retrieve transaction receipts") ||
-						e.toString().includes("Failed to retrieve accounts")
-					)
+					if (e.toString().includes("Failed to retrieve transaction receipts") || e.toString().includes("Failed to retrieve accounts"))
 						console.log("Nodes don't want to share info :(");
-					else console.log(`Tx: ${cashlink.txhash} not mined`, e);
+					else console.log(`Tx: ${cashlink.tx.transactionHash} not mined`, e);
 				}
 			}
 			updateTitle();
@@ -126,22 +155,23 @@
 		setTimeout(() => (copyButtonText = "Copy All"), 3000);
 	};
 
-	const updateStore = () => {
-		cashlinks.forEach((x) => {
-			const index = $cashlinkArray.findIndex(
-				(cashlink) => cashlink.txhash === x.txhash,
-			);
-			$cashlinkArray[index] = x;
+	onMount(async () => {
+		await isClientReady();
+		latestCashlinks.subscribe((latest) => {
+			if (latest.length) {
+				const txArray = latest.map(({ tx, funded }) => {
+					const transaction = Nimiq.Transaction.fromPlain(tx);
+					const state = funded ? Client.TransactionState.MINED : Client.TransactionState.PENDING;
+					return new Client.TransactionDetails(transaction, state);
+				});
+				transactions.add(txArray);
+			}
 		});
-
-		// Force Svelte to update store
-		$cashlinkArray = $cashlinkArray;
-		$latestCashlinks = cashlinks;
-	};
+	});
 
 	// Unsubscribe when leaving page
 	onDestroy(() => {
-		newTransactionUnsubscribe();
+		transactionsUnsubscribe();
 		heightUnsubscribe();
 		latestUnsubscribe();
 	});
@@ -160,13 +190,10 @@
 			<p>Your Cashlinks are all ready, share them with the world 🙌🏼</p>
 		{:else}
 			<p>
-				{`${fundedAmount}/${cashlinks.length}`} Cashlinks funded, but you can already
-				share them 🙌🏼
+				{`${fundedAmount}/${cashlinks.length}`} Cashlinks funded, but you can already share them 🙌🏼
 			</p>
 		{/if}
-		<button class="nq-button-pill blue" on:click={copyToClipboard}
-			>{copyButtonText}</button
-		>
+		<button class="nq-button-pill blue" on:click={copyToClipboard}>{copyButtonText}</button>
 		{#each cashlinks as cashlink, i}
 			<CashlinkItem index={i} {cashlink} />
 		{/each}

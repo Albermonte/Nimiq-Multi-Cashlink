@@ -7,11 +7,7 @@
 	import { cashlinkArray } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
-	import {
-		claimUnclaimedCashlinks,
-		deletePendingCashlinks,
-		deleteClaimedCashlinks,
-	} from "../services";
+	import { claimUnclaimedCashlinks, deletePendingCashlinks, deleteClaimedCashlinks } from "../services";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -32,8 +28,7 @@
 		});
 
 		document.title = `History - ${claimedAmount}/${fundedAmount} claimed/funded`;
-		if (cashlinks.length === fundedAmount && cashlinks.length === claimedAmount)
-			stillUpdating = false;
+		if (cashlinks.length === fundedAmount && cashlinks.length === claimedAmount) stillUpdating = false;
 	});
 
 	// Check every cashlink state on head change
@@ -55,23 +50,17 @@
 						// Check if not mined or node didn't share info with us
 						cashlinks[i] = cashlink;
 					} else {
-						const tx = await client.getTransaction(cashlink.txhash);
-						if (
-							tx.state === Client.TransactionState.MINED ||
-							tx.state === Client.TransactionState.CONFIRMED
-						) {
+						const tx = await client.getTransaction(cashlink.tx.transactionHash);
+						if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
 							cashlink.funded = true;
 							cashlinks[i] = cashlink;
 						}
 					}
 				} catch (e) {
-					if (
-						e.toString().includes("Failed to retrieve transaction receipts") ||
-						e.toString().includes("Failed to retrieve accounts")
-					) {
+					if (e.toString().includes("Failed to retrieve transaction receipts") || e.toString().includes("Failed to retrieve accounts")) {
 						console.log("Nodes don't want to share info :(");
 						stillUpdating = true;
-					} else console.log(`Tx: ${cashlink.txhash} not mined`, e);
+					} else console.log(`Tx: ${cashlink.tx.transactionHash} not mined`, e);
 				}
 			}
 			cashlinkArray.set(cashlinks);
@@ -100,15 +89,9 @@
 			<span class="small-message"><i>Still updating, might be slow</i></span>
 		{/if}
 		<div class="buttons">
-			<button class="nq-button-pill green" on:click={claimUnclaimedCashlinks}
-				>Claim Unclaimed</button
-			>
-			<button class="nq-button-pill orange" on:click={deletePendingCashlinks}
-				>Delete Pending</button
-			>
-			<button class="nq-button-pill red" on:click={deleteClaimedCashlinks}
-				>Delete Claimed</button
-			>
+			<button class="nq-button-pill green" on:click={claimUnclaimedCashlinks}>Claim Unclaimed</button>
+			<button class="nq-button-pill orange" on:click={deletePendingCashlinks}>Delete Pending</button>
+			<button class="nq-button-pill red" on:click={deleteClaimedCashlinks}>Delete Claimed</button>
 		</div>
 		{#each $cashlinkArray as cashlink, index}
 			{#if cashlink}

@@ -4,21 +4,46 @@ import {
 	indexedDBStorage,
 	PersistentStore,
 } from "@macfja/svelte-persistent-store";
-import type { Wallet, Client } from "@nimiq/core-web/types";
+import type { Wallet, ExtendedTransaction } from "@nimiq/core-web/types";
 import type { Writable } from "svelte/store";
 import type { MultiCashlink } from "./model";
+
+export interface PlainTransaction {
+	transactionHash: string,
+	format: string;
+	sender: string;
+	senderType: string;
+	recipient: string;
+	recipientType: string;
+	value: number;
+	fee: number;
+	feePerByte: number;
+	validityStartHeight: number;
+	network: string;
+	flags: number;
+	data: { raw: string; };
+	proof: {
+		raw: string,
+		signature?: string,
+		publicKey?: string,
+		signer?: string,
+		pathLength?: number,
+	};
+	size: number;
+	valid: boolean;
+}
 
 export interface CashlinkStore {
 	url: string;
 	amount: number;
-	transactionDetails: Client.TransactionDetails;
-	txhash: string;
+	tx: PlainTransaction;
 	recipient: string;
 	validityStartHeight: number;
 	funded: boolean;
 	claimed: boolean;
 	message: string;
 }
+
 
 export const multiCashlink: Writable<MultiCashlink> = writable({
 	amount: undefined,

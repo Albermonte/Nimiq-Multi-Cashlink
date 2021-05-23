@@ -1,7 +1,7 @@
 import Nimiq from "@nimiq/core-web";
 import HubApi from "@nimiq/hub-api";
 import { Utf8Tools } from "@nimiq/utils";
-import type { Client } from "@nimiq/core-web/types";
+// import type { ExtendedTransaction } from "@nimiq/core-web/types";
 
 import {
 	start,
@@ -14,7 +14,7 @@ import {
 import { get } from "svelte/store";
 import { bind } from "svelte-simple-modal";
 
-import { wallet, balance, showModal } from "../store";
+import { wallet, balance, showModal, PlainTransaction } from "../store";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
 import ErrorModal from "../modals/ErrorModal.svelte";
@@ -186,16 +186,15 @@ export const generateCashlink = (amount: number, message: string): Cashlink => {
 	};
 };
 
-export const fundCashlink = async (
+export const fundCashlink = (
 	cashlink: Cashlink,
 	amount: number,
 	fee: number,
-): Promise<{
-	transactionDetails: Client.TransactionDetails;
-	txhash: string;
+): {
+	tx: PlainTransaction;
 	validityStartHeight: number;
 	recipient: string;
-}> => {
+} => {
 	const $height = get(height);
 	const $wallet = get(wallet);
 
@@ -220,11 +219,9 @@ export const fundCashlink = async (
 	const proof = Nimiq.SignatureProof.singleSig(keyPair.publicKey, signature);
 	tx.proof = proof.serialize();
 
-	const transactionDetails = await client.sendTransaction(tx);
-
+	client.sendTransaction(tx);
 	return {
-		transactionDetails: transactionDetails,
-		txhash: tx.hash().toHex(),
+		tx: tx.toPlain(),
 		validityStartHeight: $height, // If current height > start height + 10 -> Resend Tx TODO:
 		recipient: cashlink.address,
 	};
