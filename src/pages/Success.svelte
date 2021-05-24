@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
 	import { Link } from "svelte-routing";
-	import { accounts, client, height, transactions } from "nimiq-svelte-stores";
+	import { accounts, client, transactions } from "nimiq-svelte-stores";
 	import Nimiq from "@nimiq/core-web";
 	import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 	const { Client } = Nimiq;
@@ -112,6 +112,7 @@
 				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
 				if (index >= 0 && cashlinks[index].funded) {
 					cashlinks[index].claimed = true;
+					accounts.remove(account.address.toUserFriendlyAddress());
 					updateStore();
 				}
 			} else {
