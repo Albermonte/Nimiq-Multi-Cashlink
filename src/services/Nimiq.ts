@@ -68,15 +68,17 @@ export const initNimiq = async () => {
 		if ($consensus !== "established") return;
 		const $wallet = get(wallet);
 		const account = accounts.find(acc => acc.address.toUserFriendlyAddress() === $wallet.address.toUserFriendlyAddress());
-		if (!account) return;
-		const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
-		if (isNaN(accountBalance)) {
+		if (!account) {
 			const res = await fetch(
-				`https://api.nimiq.watch/account/${account.address.toUserFriendlyAddress()}`,
+				`https://api.nimiq.watch/account/${$wallet.address.toUserFriendlyAddress()}`,
 			);
 			const { balance: nimiqWatchBalance } = await res.json();
 			balance.set(Nimiq.Policy.lunasToCoins(nimiqWatchBalance));
-		} else balance.set(accountBalance);
+		} else {
+			if (account.balance === undefined) return;
+			const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
+			balance.set(accountBalance);
+		}
 	});
 };
 
