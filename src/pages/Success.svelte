@@ -68,6 +68,7 @@
 						if (index >= 0) {
 							fundedAmount++;
 							cashlinks[index].funded = true;
+							updateTitle();
 							if (index === txArray.length - 1 && !allFunded) updateStore();
 						}
 						break;
@@ -109,7 +110,7 @@
 		accountsArray.forEach((account) => {
 			if (account.balance === 0) {
 				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
-				if (index >= 0) {
+				if (index >= 0 && cashlinks[index].funded) {
 					cashlinks[index].claimed = true;
 					updateStore();
 				}
