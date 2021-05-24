@@ -122,50 +122,6 @@
 		});
 	});
 
-	// Check every cashlink state on head change
-	const heightUnsubscribe = height.subscribe(async () => {
-		return;
-		// Wait 1 second before checking so the page can be loaded
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		await isClientReady();
-		await client.waitForConsensusEstablished();
-
-		if (!cashlinks.length) return;
-
-		fundedAmount = 0;
-		cashlinks.forEach((x) => {
-			if (x.funded) fundedAmount++;
-		});
-
-		for (const [i, cashlink] of cashlinks.entries()) {
-			// Skip this one if has been created less than 2 blocks ago
-			if (cashlink.validityStartHeight + 2 > $height) continue;
-			if (!cashlink.claimed) {
-				try {
-					if (cashlink.funded) {
-						const recipient = await client.getAccount(cashlink.recipient);
-						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
-						// TODO: if not funded give option to resend to pending cashlinks, automatic and ask user before?
-						// TODO: Check if not mined or node didn't share info with us
-						cashlinks[i] = cashlink;
-					} else {
-						const tx = await client.getTransaction(cashlink.tx.transactionHash);
-						if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
-							cashlink.funded = true;
-							cashlinks[i] = cashlink;
-						}
-					}
-				} catch (e) {
-					if (e.toString().includes("Failed to retrieve transaction receipts") || e.toString().includes("Failed to retrieve accounts"))
-						console.log("Nodes don't want to share info :(");
-					else console.log(`Tx: ${cashlink.tx.transactionHash} not mined`, e);
-				}
-			}
-			updateTitle();
-		}
-		updateStore();
-	});
-
 	const copyToClipboard = () => {
 		let str = "";
 		for (const cashlink of $latestCashlinks) str += `${cashlink.url}\n`;
@@ -195,7 +151,6 @@
 	onDestroy(() => {
 		transactionsUnsubscribe();
 		accountUnsubscribe();
-		heightUnsubscribe();
 		latestUnsubscribe();
 	});
 </script>
