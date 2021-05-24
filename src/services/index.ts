@@ -207,7 +207,7 @@ export const claimUnclaimedCashlinks = async () => {
 	if (!$cashlinkArray.length) return;
 	const $height = get(height);
 
-	for (const cashlink of $cashlinkArray) {
+	for (const [index, cashlink] of $cashlinkArray.entries()) {
 		if (cashlink && cashlink.funded && !cashlink.claimed) {
 			const str = cashlink.url
 				.split("cashlink/#")[1]
@@ -239,7 +239,10 @@ export const claimUnclaimedCashlinks = async () => {
 			).serialize();
 			transaction.proof = proof;
 
-			client.sendTransaction(transaction);
+			await client.sendTransaction(transaction);
+			// Wait 5 second between every 100 transfers
+			if (index % 100 === 0)
+				await new Promise((resolve) => setTimeout(resolve, 5 * 1e3));
 		}
 	}
 };
