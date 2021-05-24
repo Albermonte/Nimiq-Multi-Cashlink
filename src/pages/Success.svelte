@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
 	import { Link } from "svelte-routing";
-	import { height, client, transactions } from "nimiq-svelte-stores";
+	import { accounts, client, height, transactions } from "nimiq-svelte-stores";
 	import Nimiq from "@nimiq/core-web";
 	import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 	const { Client } = Nimiq;
@@ -31,7 +31,13 @@
 	};
 
 	const updateTitle = () => {
+		if (allFunded) return;
 		if (cashlinks.length === fundedAmount) {
+			console.log("Updating Title");
+			if (!allFunded) {
+				console.log("allFunded", allFunded);
+				updateStore();
+			}
 			allFunded = true;
 			document.title = "Ready to share";
 		} else {
@@ -47,9 +53,11 @@
 		cashlinks.forEach((x) => {
 			if (x.funded) fundedAmount++;
 		});
+		updateTitle();
 	});
 
 	const transactionsUnsubscribe = transactions.subscribe((txArray) => {
+		if (allFunded) return;
 		fundedAmount = 0;
 		txArray.forEach(async (txDetails: ClientTransactionDetails) => {
 			if (txDetails) {
@@ -60,7 +68,7 @@
 						if (index >= 0) {
 							fundedAmount++;
 							cashlinks[index].funded = true;
-							updateTitle();
+							if (index === txArray.length - 1 && !allFunded) updateStore();
 						}
 						break;
 					}
@@ -71,6 +79,7 @@
 							fundedAmount++;
 							cashlinks[index].funded = true;
 							updateTitle();
+							if (index === txArray.length - 1 && !allFunded) updateStore();
 						}
 						break;
 					}
@@ -94,9 +103,27 @@
 		});
 	});
 
+	const accountUnsubscribe = accounts.subscribe((accountsArray) => {
+		// All Cashlinks account + stored wallet account
+		if (accountsArray.length <= 1) return;
+		accountsArray.forEach((account) => {
+			if (account.balance === 0) {
+				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
+				if (index >= 0) {
+					cashlinks[index].claimed = true;
+					updateStore();
+				}
+			} else {
+				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
+				if (index >= 0) {
+					cashlinks[index].claimed = false;
+				}
+			}
+		});
+	});
+
 	// Check every cashlink state on head change
 	const heightUnsubscribe = height.subscribe(async () => {
-		updateStore();
 		return;
 		// Wait 1 second before checking so the page can be loaded
 		await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -157,21 +184,17 @@
 
 	onMount(async () => {
 		await isClientReady();
-		latestCashlinks.subscribe((latest) => {
-			if (latest.length) {
-				const txArray = latest.map(({ tx, funded }) => {
-					const transaction = Nimiq.Transaction.fromPlain(tx);
-					const state = funded ? Client.TransactionState.MINED : Client.TransactionState.PENDING;
-					return new Client.TransactionDetails(transaction, state);
-				});
-				transactions.add(txArray);
-			}
+		await client.waitForConsensusEstablished();
+		const accountsArray = $latestCashlinks.map(({ recipient, claimed }) => {
+			if (!claimed) return recipient;
 		});
+		accounts.add(accountsArray.filter((x) => x !== undefined));
 	});
 
 	// Unsubscribe when leaving page
 	onDestroy(() => {
 		transactionsUnsubscribe();
+		accountUnsubscribe();
 		heightUnsubscribe();
 		latestUnsubscribe();
 	});

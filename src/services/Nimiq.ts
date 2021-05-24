@@ -63,9 +63,11 @@ export const initNimiq = async () => {
 	});
 
 	await summonWallet();
-	accounts.subscribe(async ([account]) => {
+	accounts.subscribe(async (accounts) => {
 		const $consensus = get(consensus);
 		if ($consensus !== "established") return;
+		const $wallet = get(wallet);
+		const account = accounts.find(acc => acc.address.toUserFriendlyAddress() === $wallet.address.toUserFriendlyAddress());
 		const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
 		if (isNaN(accountBalance)) {
 			const res = await fetch(
