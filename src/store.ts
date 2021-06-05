@@ -4,7 +4,7 @@ import {
 	indexedDBStorage,
 	PersistentStore,
 } from "@macfja/svelte-persistent-store";
-import type { Wallet, ExtendedTransaction } from "@nimiq/core-web/types";
+import type { Wallet } from "@nimiq/core-web/types";
 import type { Writable } from "svelte/store";
 import type { MultiCashlink } from "./model";
 
@@ -57,6 +57,7 @@ export const totalAmount: Writable<number> = writable(0);
 export const amountToPay: Writable<number> = writable(0);
 export const wallet: Writable<Wallet> = writable(null);
 export const showModal: Writable<any> = writable(null);
+export const isStillUpdating: Writable<boolean> = writable(false);
 export const latestCashlinks: PersistentStore<Array<CashlinkStore>> = persist(
 	writable([]),
 	indexedDBStorage(),

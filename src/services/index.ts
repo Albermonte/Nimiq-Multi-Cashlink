@@ -15,6 +15,7 @@ import {
 	latestCashlinks,
 	cashlinkArray,
 	CashlinkStore,
+	isStillUpdating
 } from "../store";
 import {
 	isClientReady,
@@ -201,6 +202,7 @@ export const deletePendingCashlinks = async () => {
 };
 
 export const claimUnclaimedCashlinks = async () => {
+	isStillUpdating.set(true);
 	await client.waitForConsensusEstablished();
 	const recipientAddress = await getAddressToWithdraw();
 	const $cashlinkArray = get(cashlinkArray);
@@ -240,11 +242,21 @@ export const claimUnclaimedCashlinks = async () => {
 			transaction.proof = proof;
 
 			await client.sendTransaction(transaction);
-			// Wait 5 second between every 100 transfers
-			if (index % 100 === 0)
-				await new Promise((resolve) => setTimeout(resolve, 5 * 1e3));
+			// Wait 5 second between every 20 transfers
+			if (index % 20 === 0)
+				await sleep(5);
 		}
 	}
+
+	isStillUpdating.set(false);
+};
+
+/**
+ * Wait for x seconds
+ * @param seconds - Time in seconds
+ */
+export const sleep = async (seconds) => {
+	return new Promise((resolve) => setTimeout(resolve, seconds * 1e3));
 };
 
 /**

@@ -9,6 +9,7 @@
 	import { latestCashlinks, cashlinkArray } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
+	import { sleep } from "../services";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -143,10 +144,33 @@
 	onMount(async () => {
 		await isClientReady();
 		await client.waitForConsensusEstablished();
-		const accountsArray = $latestCashlinks.map(({ recipient, claimed }) => {
+		let accountsArray = $latestCashlinks.map(({ recipient, claimed }) => {
 			if (!claimed) return recipient;
 		});
-		accounts.add(accountsArray.filter((x) => x !== undefined));
+		accountsArray = accountsArray.filter((x) => x !== undefined);
+		console.log(accountsArray.length);
+		let rangeStart = 0;
+		let rangeEnd = 50;
+		let waiting = false;
+		const accUnsubscribe = accounts.subscribe(async (accs) => {
+			if (waiting) return;
+			const every = accs.every((x) => x.balance !== undefined);
+			if (!every && accs.length !== 1) {
+				waiting = true;
+				console.log("Sleeping");
+				await sleep(10); // Give some time if not all accounts ready
+				waiting = false;
+			}
+			console.log(`${accs.length} of ${accountsArray.length} accounts added`);
+			if (every || accs.length === 1) {
+				console.log("Adding more accounts");
+				accounts.add(accountsArray.slice(rangeStart, rangeEnd));
+				rangeStart = rangeEnd;
+				rangeEnd += rangeEnd;
+			}
+			// accountsArray.length + 1 account from temp wallet
+			if (accs.length >= accountsArray.length + 1) accUnsubscribe();
+		});
 	});
 
 	// Unsubscribe when leaving page
