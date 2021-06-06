@@ -50,10 +50,10 @@ const waitForFunds = async (txhash: string): Promise<void> => {
 							// TODO: catch error
 							throw new Error(`${txDetails.transactionHash.toHex()} Expired`);
 						case Nimiq.Client.TransactionState.INVALIDATED:
-							console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
+							console.log(`${txDetails.transactionHash.toHex()} Invalidated`);
 							// TODO: catch error
 							throw new Error(
-								`${txDetails.transactionHash.toHex()} Invaldiated`,
+								`${txDetails.transactionHash.toHex()} Invalidated`,
 							);
 					}
 				}
@@ -268,20 +268,3 @@ export const maxCashlinks = Nimiq.Mempool.TRANSACTIONS_PER_SENDER_MAX;
  * Max number of Free Cashlinks per block per Sender
  */
 export const maxFreeCashlinks = Nimiq.Mempool.FREE_TRANSACTIONS_PER_SENDER_MAX;
-
-/***
-FLOW:
-
-1. Previo:
-	1.1 Consenso
-	1.2 crear/cargar wallet
-2. wallet temporal:
-	2.1 eneseña palabras
-	2.2 recibir el dinero -> tarda +-1 min (mostrar cosas guays sobre Nimiq de mientras? Publicidad?)
-	2.3 comprobar que hay que enough money
-3. cashlink:
-	3.1 crear los cashlink
-	3.2 mostrar a usuario cashlinks
-	3.3 guardar en localStorage
-
-**/
