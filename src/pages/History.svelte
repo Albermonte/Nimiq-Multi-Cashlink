@@ -139,7 +139,7 @@
 				await sleep(10); // Give some time if not all accounts ready
 				waiting = false;
 			}
-			console.log(`${accs.length} of ${accountsArray.length} accounts added`);
+			console.log(`${Math.max(rangeEnd, accs.length)} of ${accountsArray.length} accounts added`);
 			if (every || accs.length === 1) {
 				console.log("Adding more accounts");
 				accounts.add(accountsArray.slice(rangeStart, rangeEnd));
@@ -147,7 +147,7 @@
 				rangeEnd += rangeEnd;
 			}
 			// accountsArray.length + 1 account from temp wallet
-			if (accs.length >= accountsArray.length + 1) {
+			if (Math.max(rangeEnd, accs.length) >= accountsArray.length + 1) {
 				console.log("Stop updating");
 				$isStillUpdating = false;
 				accUnsubscribe();
