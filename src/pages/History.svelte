@@ -127,6 +127,10 @@
 			if (!claimed) return recipient;
 		});
 		accountsArray = accountsArray.filter((x) => x !== undefined);
+		if (!accountsArray.length) {
+			$isStillUpdating = false;
+			return;
+		}
 		let rangeStart = 0;
 		let rangeEnd = 50;
 		let waiting = false;
@@ -147,7 +151,7 @@
 				rangeEnd += rangeEnd;
 			}
 			// accountsArray.length + 1 account from temp wallet
-			if (Math.max(rangeEnd, accs.length) >= accountsArray.length + 1) {
+			if (Math.max(rangeEnd, accs.length) >= accountsArray.length + 1 && accs.length > 1) {
 				console.log("Stop updating");
 				$isStillUpdating = false;
 				accUnsubscribe();

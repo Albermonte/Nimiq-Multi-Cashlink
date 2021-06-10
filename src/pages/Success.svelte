@@ -148,7 +148,7 @@
 			if (!claimed) return recipient;
 		});
 		accountsArray = accountsArray.filter((x) => x !== undefined);
-		console.log(accountsArray.length);
+		if (!accountsArray.length) return;
 		let rangeStart = 0;
 		let rangeEnd = 50;
 		let waiting = false;
