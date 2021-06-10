@@ -108,6 +108,7 @@
 				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
 				if (index >= 0) {
 					cashlinks[index].claimed = false;
+					cashlinks[index].funded = true;
 				}
 			}
 		});
