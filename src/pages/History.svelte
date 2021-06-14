@@ -7,7 +7,7 @@
 	import { cashlinkArray } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
-	import { claimUnclaimedCashlinks, deletePendingCashlinks, deleteClaimedCashlinks, analyticsInstance } from "../services";
+	import { claimUnclaimedCashlinks, deletePendingCashlinks, deleteClaimedCashlinks, analyticsInstance, isDev } from "../services";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -32,7 +32,8 @@
 			stillUpdating = false;
 			try {
 				// Cashlinks in History
-				if (cashlinks.length) analyticsInstance.action("a883e4a7-3c86-4595-9d6d-31c5bccc48eb", { key: "Cashlinks", value: cashlinks.length });
+				if (cashlinks.length && !isDev)
+					analyticsInstance.action("a883e4a7-3c86-4595-9d6d-31c5bccc48eb", { key: "Cashlinks", value: cashlinks.length });
 			} catch (e) {
 				// TODO: Add Sentry logs
 			}
