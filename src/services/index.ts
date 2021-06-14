@@ -30,6 +30,14 @@ import WaitForFundsModal from "../modals/WaitForFundsModal.svelte";
 //@ts-ignore
 export const isDev: boolean = process.env.dev;
 
+import * as ackeeTracker from "ackee-tracker";
+export const analyticsInstance = ackeeTracker.create("https://an.shortnim.me", {
+	// https://github.com/electerious/ackee-tracker#-options
+	detailed: true,
+	ignoreLocalhost: true,
+	ignoreOwnVisits: false,
+});
+
 /**
  * Wait until tx is known
  */
@@ -128,6 +136,18 @@ export const createMultiCashlinks = async () => {
 
 	const $multiCashlink = get(multiCashlink);
 	const amountInLunas = Nimiq.Policy.coinsToLunas($multiCashlink.amount);
+	try {
+		if (!isDev) {
+			// Number of Cashlinks
+			analyticsInstance.action('59f61a90-efe9-4423-b64b-ac1424ca2030', { key: 'Cashlinks', value: $multiCashlink.nTx });
+			// Lunas per Cashlink
+			analyticsInstance.action('7d96d5ca-7ab5-4dc8-beb3-5dd3df3a5878', { key: 'Lunas', value: amountInLunas });
+			// Contains Message (must be a positive integer)
+			analyticsInstance.action('b164f80e-db7a-43b1-b0b1-70540bb77902', { key: 'Message', value: $multiCashlink.message ? 2 : 1 });
+		}
+	} catch (e) {
+		// TODO: Add Sentry logs
+	}
 
 	const cashlinks = Array.from(
 		{ length: $multiCashlink.nTx },
@@ -254,7 +274,7 @@ export const maxFreeCashlinks = Nimiq.Mempool.FREE_TRANSACTIONS_PER_SENDER_MAX;
 FLOW:
 
 1. Previo:
-	1.1 Consenso 
+	1.1 Consenso
 	1.2 crear/cargar wallet
 2. wallet temporal:
 	2.1 eneseña palabras
@@ -264,5 +284,5 @@ FLOW:
 	3.1 crear los cashlink
 	3.2 mostrar a usuario cashlinks
 	3.3 guardar en localStorage
-	
+
 **/
