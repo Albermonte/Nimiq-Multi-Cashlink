@@ -8,7 +8,7 @@
 	import { cashlinkArray, isStillUpdating } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
-	import { claimUnclaimedCashlinks, deletePendingCashlinks, deleteClaimedCashlinks, sleep } from "../services";
+	import { claimUnclaimedCashlinks, deletePendingCashlinks, deleteClaimedCashlinks, sleep, analyticsInstance, isDev } from "../services";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -32,7 +32,16 @@
 	};
 
 	const updateTitle = () => {
-		if (cashlinks.length === fundedAmount) allFunded = true;
+		if (cashlinks.length === fundedAmount) {
+      allFunded = true;
+      try {
+				// Cashlinks in History
+				if ($cashlinkArray.length && !isDev)
+					analyticsInstance.action("a883e4a7-3c86-4595-9d6d-31c5bccc48eb", { key: "Cashlinks", value: cashlinks.length });
+			} catch (e) {
+				// TODO: Add Sentry logs
+			}
+    }
 		document.title = `History - ${claimedAmount}/${fundedAmount} claimed/funded`;
 	};
 

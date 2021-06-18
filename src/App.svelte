@@ -12,6 +12,9 @@
 
 	import { initNimiq } from "./services/Nimiq";
 	initNimiq();
+
+	import { analyticsInstance, isDev } from "./services";
+	if (!isDev) analyticsInstance.record("eafc96b8-bfd1-4ab7-8911-1015e4997fbe");
 </script>
 
 <Router {url}>
