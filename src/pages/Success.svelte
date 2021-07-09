@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
 	import { Link } from "svelte-routing";
-	import { height, client, newTransaction } from "nimiq-svelte-stores";
+	import { accounts, client, transactions } from "nimiq-svelte-stores";
 	import Nimiq from "@nimiq/core-web";
 	import type { ClientTransactionDetails } from "@nimiq/core-web/types";
 	const { Client } = Nimiq;
@@ -9,6 +9,7 @@
 	import { latestCashlinks, cashlinkArray } from "../store";
 	import type { CashlinkStore } from "../store";
 	import { isClientReady } from "../services/Nimiq";
+	import { sleep } from "../services";
 
 	import CashlinkItem from "../components/CashlinkItem.svelte";
 
@@ -18,96 +19,108 @@
 	let allFunded = false;
 	let cashlinks: Array<CashlinkStore> = [];
 
+	const updateStore = () => {
+		console.log("Updating Store");
+		cashlinks.forEach((x) => {
+			const index = $cashlinkArray.findIndex((cashlink) => cashlink.tx.transactionHash === x.tx.transactionHash);
+			$cashlinkArray[index] = x;
+		});
+
+		// Force Svelte to update store
+		$cashlinkArray = $cashlinkArray;
+		$latestCashlinks = cashlinks;
+	};
+
 	const updateTitle = () => {
+		if (allFunded) return;
 		if (cashlinks.length === fundedAmount) {
+			console.log("Updating Title");
+			if (!allFunded) {
+				console.log("allFunded", allFunded);
+				updateStore();
+			}
 			allFunded = true;
 			document.title = "Ready to share";
-			updateStore();
 		} else {
 			allFunded = false;
 			document.title = `${fundedAmount}/${cashlinks.length} funded`;
 		}
 	};
-	
+
 	const latestUnsubscribe = latestCashlinks.subscribe(($) => {
+		if (!$.length) return;
 		fundedAmount = 0;
 		cashlinks = $;
 		cashlinks.forEach((x) => {
 			if (x.funded) fundedAmount++;
 		});
+		updateTitle();
 	});
-	
-	const newTransactionUnsubscribe = newTransaction.subscribe((txDetails: ClientTransactionDetails) => {
-		if(txDetails){
+
+	const transactionsUnsubscribe = transactions.subscribe((txArray) => {
+		if (allFunded) return;
+		fundedAmount = 0;
+		txArray.forEach(async (txDetails: ClientTransactionDetails) => {
+			if (!txDetails) return;
 			switch (txDetails.state) {
-				case Nimiq.Client.TransactionState.MINED:
+				case Nimiq.Client.TransactionState.MINED: {
 					// Transaction has been confirmed once
-					cashlinks.forEach((cashlink, index) => {
-						if (cashlink.txhash === txDetails.transactionHash.toHex()) {
-							fundedAmount++;
-							cashlink.funded = true;
-							cashlinks[index] = cashlink;
-						}
-					});
-					updateTitle();
+					const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+					if (index >= 0) {
+						fundedAmount++;
+						cashlinks[index].funded = true;
+						updateTitle();
+						if (index === txArray.length - 1 && !allFunded) updateStore();
+					}
 					break;
+				}
+				case Nimiq.Client.TransactionState.CONFIRMED: {
+					// Transaction has been confirmed ten times
+					const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+					if (index >= 0) {
+						fundedAmount++;
+						cashlinks[index].funded = true;
+						updateTitle();
+						if (index === txArray.length - 1 && !allFunded) updateStore();
+					}
+					break;
+				}
 				case Nimiq.Client.TransactionState.EXPIRED:
 					console.log(`${txDetails.transactionHash.toHex()} Expired`);
 					break;
 				case Nimiq.Client.TransactionState.INVALIDATED:
-						console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
-					break;
-			}
-		}
-	})
-
-	// Check every cashlink state on head change
-	const heightUnsubscribe = height.subscribe(async () => {
-		// Wait 1 second before checking so the page can be loaded
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		await isClientReady();
-		await client.waitForConsensusEstablished();
-
-		if (!cashlinks.length) return;
-
-		fundedAmount = 0;
-		cashlinks.forEach((x) => {
-			if (x.funded) fundedAmount++;
-		});
-
-		for (const [i, cashlink] of cashlinks.entries()) {
-			// Skip this one if has been created less than 2 blocks ago
-			if (cashlink.validityStartHeight + 2 > $height) continue;
-			if (!cashlink.claimed) {
-				try {
-					if (cashlink.funded) {
-						const recipient = await client.getAccount(cashlink.recipient);
-						if (recipient.balance === 0) cashlink.claimed = true; // TODO: native notification when claimed and from which address was claimed? Time and more info?
-						// TODO: if not funded give option to resend to pending cashlinks, automatic and ask user before?
-						// TODO: Check if not mined or node didn't share info with us
-						cashlinks[i] = cashlink;
-					} else {
-						const tx = await client.getTransaction(cashlink.txhash);
-						if (
-							tx.state === Client.TransactionState.MINED ||
-							tx.state === Client.TransactionState.CONFIRMED
-						) {
-							cashlink.funded = true;
-							cashlinks[i] = cashlink;
+					console.log(`${txDetails.transactionHash.toHex()} Invalidated`);
+					const tx = await client.getTransaction(txDetails.transactionHash.toHex());
+					if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
+						const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+						if (index >= 0) {
+							fundedAmount++;
+							cashlinks[index].funded = true;
+							updateTitle();
 						}
 					}
-				} catch (e) {
-					if (
-						e.toString().includes("Failed to retrieve transaction receipts") ||
-						e.toString().includes("Failed to retrieve accounts")
-					)
-						console.log("Nodes don't want to share info :(");
-					else console.log(`Tx: ${cashlink.txhash} not mined`, e);
+					break;
+			}
+		});
+	});
+
+	const accountUnsubscribe = accounts.subscribe((accountsArray) => {
+		// All Cashlinks account + stored wallet account
+		if (accountsArray.length <= 1) return;
+		accountsArray.forEach((account) => {
+			const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
+			if (account.balance === 0) {
+				if (index >= 0 && cashlinks[index].funded) {
+					cashlinks[index].claimed = true;
+					accounts.remove(account.address.toUserFriendlyAddress());
+					updateStore();
+				}
+			} else {
+				if (index >= 0) {
+					cashlinks[index].claimed = false;
 				}
 			}
-			updateTitle();
-		}
-		updateStore();
+		});
 	});
 
 	const copyToClipboard = () => {
@@ -126,23 +139,39 @@
 		setTimeout(() => (copyButtonText = "Copy All"), 3000);
 	};
 
-	const updateStore = () => {
-		cashlinks.forEach((x) => {
-			const index = $cashlinkArray.findIndex(
-				(cashlink) => cashlink.txhash === x.txhash,
-			);
-			$cashlinkArray[index] = x;
+	onMount(async () => {
+		await isClientReady();
+		await client.waitForConsensusEstablished();
+		const accountsArray = $cashlinkArray.map(({ recipient, claimed }) => (!claimed ? recipient : undefined)).filter((x) => x !== undefined);
+		if (!accountsArray.length) return;
+		let rangeStart = 0;
+		let rangeEnd = 50;
+		let waiting = false;
+		const accUnsubscribe = accounts.subscribe(async (accs) => {
+			if (waiting) return;
+			const every = accs.every((x) => x.balance !== undefined);
+			if (!every && accs.length !== 1) {
+				waiting = true;
+				console.log("Sleeping");
+				await sleep(10); // Give some time if not all accounts ready
+				waiting = false;
+			}
+			console.log(`${accs.length} of ${accountsArray.length} accounts added`);
+			if (every || accs.length === 1) {
+				console.log("Adding more accounts");
+				accounts.add(accountsArray.slice(rangeStart, rangeEnd));
+				rangeStart = rangeEnd;
+				rangeEnd += rangeEnd;
+			}
+			// accountsArray.length + 1 account from temp wallet
+			if (accs.length >= accountsArray.length + 1) accUnsubscribe();
 		});
-
-		// Force Svelte to update store
-		$cashlinkArray = $cashlinkArray;
-		$latestCashlinks = cashlinks;
-	};
+	});
 
 	// Unsubscribe when leaving page
 	onDestroy(() => {
-		newTransactionUnsubscribe();
-		heightUnsubscribe();
+		transactionsUnsubscribe();
+		accountUnsubscribe();
 		latestUnsubscribe();
 	});
 </script>
@@ -160,13 +189,10 @@
 			<p>Your Cashlinks are all ready, share them with the world 🙌🏼</p>
 		{:else}
 			<p>
-				{`${fundedAmount}/${cashlinks.length}`} Cashlinks funded, but you can already
-				share them 🙌🏼
+				{`${fundedAmount}/${cashlinks.length}`} Cashlinks funded, but you can already share them 🙌🏼
 			</p>
 		{/if}
-		<button class="nq-button-pill blue" on:click={copyToClipboard}
-			>{copyButtonText}</button
-		>
+		<button class="nq-button-pill blue" on:click={copyToClipboard}>{copyButtonText}</button>
 		{#each cashlinks as cashlink, i}
 			<CashlinkItem index={i} {cashlink} />
 		{/each}

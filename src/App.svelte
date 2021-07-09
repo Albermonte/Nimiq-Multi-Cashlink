@@ -20,10 +20,9 @@
 <Router {url}>
 	<main>
 		<nav>
-			<!-- Don't use Link to prevent code being executed on backgroud from previous page -->
-			<a href="/">Home</a>
+			<Link to="/">Home</Link>
 			<Link to="about">About</Link>
-			<a href="/history">History</a>
+			<Link to="history">History</Link>
 		</nav>
 		<div style="margin: auto;">
 			<Route path="/"><Home /></Route>

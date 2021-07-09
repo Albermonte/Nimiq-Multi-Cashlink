@@ -15,6 +15,7 @@ import {
 	latestCashlinks,
 	cashlinkArray,
 	CashlinkStore,
+	isStillUpdating
 } from "../store";
 import {
 	isClientReady,
@@ -57,10 +58,10 @@ const waitForFunds = async (txhash: string): Promise<void> => {
 							// TODO: catch error
 							throw new Error(`${txDetails.transactionHash.toHex()} Expired`);
 						case Nimiq.Client.TransactionState.INVALIDATED:
-							console.log(`${txDetails.transactionHash.toHex()} Invaldiated`);
+							console.log(`${txDetails.transactionHash.toHex()} Invalidated`);
 							// TODO: catch error
 							throw new Error(
-								`${txDetails.transactionHash.toHex()} Invaldiated`,
+								`${txDetails.transactionHash.toHex()} Invalidated`,
 							);
 					}
 				}
@@ -122,7 +123,6 @@ export const createMultiCashlinks = async () => {
 		const txHash = await receiveTxFromUser($amountToPay);
 		showModal.set(WaitForFundsModal);
 		await waitForFunds(txHash);
-		showModal.set(null); // TODO: Notify with native notifications if not focused?
 		if (!(await walletHasEnoughAmount($totalAmount))) {
 			// TODO: Button to claim back balance
 			// TODO: Claim unclaimed Cashlinks
@@ -131,7 +131,10 @@ export const createMultiCashlinks = async () => {
 				`TotalAmount: ${$totalAmount}`,
 			);
 		}
+	} else {
+		showModal.set(WaitForFundsModal);
 	}
+
 	console.log("Tx received... Creating cashlinks");
 
 	const $multiCashlink = get(multiCashlink);
@@ -170,6 +173,8 @@ export const createMultiCashlinks = async () => {
 			};
 		},
 	);
+	showModal.set(null); // TODO: Notify with native notifications if not focused?
+
 	latestCashlinks.set(cashlinks);
 	cashlinkArray.update(($cashlinkArray) => $cashlinkArray.concat(cashlinks));
 
@@ -217,13 +222,14 @@ export const deletePendingCashlinks = async () => {
 };
 
 export const claimUnclaimedCashlinks = async () => {
+	isStillUpdating.set(true);
 	await client.waitForConsensusEstablished();
 	const recipientAddress = await getAddressToWithdraw();
 	const $cashlinkArray = get(cashlinkArray);
 	if (!$cashlinkArray.length) return;
 	const $height = get(height);
 
-	for (const cashlink of $cashlinkArray) {
+	for (const [index, cashlink] of $cashlinkArray.entries()) {
 		if (cashlink && cashlink.funded && !cashlink.claimed) {
 			const str = cashlink.url
 				.split("cashlink/#")[1]
@@ -255,9 +261,22 @@ export const claimUnclaimedCashlinks = async () => {
 			).serialize();
 			transaction.proof = proof;
 
-			client.sendTransaction(transaction);
+			await client.sendTransaction(transaction);
+			// Wait 5 second between every 20 transfers
+			if (index % 20 === 0)
+				await sleep(5);
 		}
 	}
+
+	isStillUpdating.set(false);
+};
+
+/**
+ * Wait for x seconds
+ * @param seconds - Time in seconds
+ */
+export const sleep = async (seconds) => {
+	return new Promise((resolve) => setTimeout(resolve, seconds * 1e3));
 };
 
 /**
@@ -269,20 +288,3 @@ export const maxCashlinks = Nimiq.Mempool.TRANSACTIONS_PER_SENDER_MAX;
  * Max number of Free Cashlinks per block per Sender
  */
 export const maxFreeCashlinks = Nimiq.Mempool.FREE_TRANSACTIONS_PER_SENDER_MAX;
-
-/***
-FLOW:
-
-1. Previo:
-	1.1 Consenso
-	1.2 crear/cargar wallet
-2. wallet temporal:
-	2.1 eneseña palabras
-	2.2 recibir el dinero -> tarda +-1 min (mostrar cosas guays sobre Nimiq de mientras? Publicidad?)
-	2.3 comprobar que hay que enough money
-3. cashlink:
-	3.1 crear los cashlink
-	3.2 mostrar a usuario cashlinks
-	3.3 guardar en localStorage
-
-**/
