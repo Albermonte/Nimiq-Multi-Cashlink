@@ -1,6 +1,7 @@
 import Nimiq from "@nimiq/core-web";
 import HubApi from "@nimiq/hub-api";
 import { Utf8Tools } from "@nimiq/utils";
+// import type { ExtendedTransaction } from "@nimiq/core-web/types";
 
 import {
 	start,
@@ -13,7 +14,7 @@ import {
 import { get } from "svelte/store";
 import { bind } from "svelte-simple-modal";
 
-import { wallet, balance, showModal } from "../store";
+import { wallet, balance, showModal, PlainTransaction } from "../store";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
 import ErrorModal from "../modals/ErrorModal.svelte";
@@ -44,7 +45,10 @@ export const initNimiq = async () => {
 	await Nimiq.load(workerURL);
 	await start(
 		(config: Nimiq.ClientConfigurationBuilder) => {
-			// config.feature(Nimiq.Client.Feature.MEMPOOL);
+			// Create a volatile consensus (not storing peer information across page reloads)
+			// Seems faster and don't takes space on the user device
+			config.volatile(true);
+			config.feature(Nimiq.Client.Feature.MEMPOOL);
 		},
 		{
 			network: isDev ? "test" : "main",
@@ -59,17 +63,22 @@ export const initNimiq = async () => {
 	});
 
 	await summonWallet();
-	accounts.subscribe(async ([account]) => {
+	accounts.subscribe(async (accounts) => {
 		const $consensus = get(consensus);
 		if ($consensus !== "established") return;
-		const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
-		if (isNaN(accountBalance)) {
+		const $wallet = get(wallet);
+		const account = accounts.find(acc => acc.address.toUserFriendlyAddress() === $wallet.address.toUserFriendlyAddress());
+		if (!account) {
 			const res = await fetch(
-				`https://api.nimiq.watch/account/${account.address.toUserFriendlyAddress()}`,
+				`https://api.nimiq.watch/account/${$wallet.address.toUserFriendlyAddress()}`,
 			);
 			const { balance: nimiqWatchBalance } = await res.json();
 			balance.set(Nimiq.Policy.lunasToCoins(nimiqWatchBalance));
-		} else balance.set(accountBalance);
+		} else {
+			if (account.balance === undefined) return;
+			const accountBalance = Nimiq.Policy.lunasToCoins(account.balance);
+			balance.set(accountBalance);
+		}
 	});
 };
 
@@ -186,7 +195,11 @@ export const fundCashlink = (
 	cashlink: Cashlink,
 	amount: number,
 	fee: number,
-) => {
+): {
+	tx: PlainTransaction;
+	validityStartHeight: number;
+	recipient: string;
+} => {
 	const $height = get(height);
 	const $wallet = get(wallet);
 
@@ -212,9 +225,8 @@ export const fundCashlink = (
 	tx.proof = proof.serialize();
 
 	client.sendTransaction(tx);
-
 	return {
-		txhash: tx.hash().toHex(),
+		tx: tx.toPlain(),
 		validityStartHeight: $height, // If current height > start height + 10 -> Resend Tx TODO:
 		recipient: cashlink.address,
 	};
