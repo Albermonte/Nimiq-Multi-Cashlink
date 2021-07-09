@@ -61,46 +61,45 @@
 		if (allFunded) return;
 		fundedAmount = 0;
 		txArray.forEach(async (txDetails: ClientTransactionDetails) => {
-			if (txDetails) {
-				switch (txDetails.state) {
-					case Nimiq.Client.TransactionState.MINED: {
-						// Transaction has been confirmed once
-						const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
-						if (index >= 0) {
-							fundedAmount++;
-							cashlinks[index].funded = true;
-							updateTitle();
-							if (index === txArray.length - 1 && !allFunded) updateStore();
-						}
-						break;
+			if (!txDetails) return;
+			switch (txDetails.state) {
+				case Nimiq.Client.TransactionState.MINED: {
+					// Transaction has been confirmed once
+					const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+					if (index >= 0) {
+						fundedAmount++;
+						cashlinks[index].funded = true;
+						updateTitle();
+						if (index === txArray.length - 1 && !allFunded) updateStore();
 					}
-					case Nimiq.Client.TransactionState.CONFIRMED: {
-						// Transaction has been confirmed ten times
-						const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
-						if (index >= 0) {
-							fundedAmount++;
-							cashlinks[index].funded = true;
-							updateTitle();
-							if (index === txArray.length - 1 && !allFunded) updateStore();
-						}
-						break;
-					}
-					case Nimiq.Client.TransactionState.EXPIRED:
-						console.log(`${txDetails.transactionHash.toHex()} Expired`);
-						break;
-					case Nimiq.Client.TransactionState.INVALIDATED:
-						console.log(`${txDetails.transactionHash.toHex()} Invalidated`);
-						const tx = await client.getTransaction(txDetails.transactionHash.toHex());
-						if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
-							const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
-							if (index >= 0) {
-								fundedAmount++;
-								cashlinks[index].funded = true;
-								updateTitle();
-							}
-						}
-						break;
+					break;
 				}
+				case Nimiq.Client.TransactionState.CONFIRMED: {
+					// Transaction has been confirmed ten times
+					const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+					if (index >= 0) {
+						fundedAmount++;
+						cashlinks[index].funded = true;
+						updateTitle();
+						if (index === txArray.length - 1 && !allFunded) updateStore();
+					}
+					break;
+				}
+				case Nimiq.Client.TransactionState.EXPIRED:
+					console.log(`${txDetails.transactionHash.toHex()} Expired`);
+					break;
+				case Nimiq.Client.TransactionState.INVALIDATED:
+					console.log(`${txDetails.transactionHash.toHex()} Invalidated`);
+					const tx = await client.getTransaction(txDetails.transactionHash.toHex());
+					if (tx.state === Client.TransactionState.MINED || tx.state === Client.TransactionState.CONFIRMED) {
+						const index = cashlinks.findIndex((cashlink) => cashlink.tx.transactionHash === txDetails.transactionHash.toHex());
+						if (index >= 0) {
+							fundedAmount++;
+							cashlinks[index].funded = true;
+							updateTitle();
+						}
+					}
+					break;
 			}
 		});
 	});
@@ -109,15 +108,14 @@
 		// All Cashlinks account + stored wallet account
 		if (accountsArray.length <= 1) return;
 		accountsArray.forEach((account) => {
+			const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
 			if (account.balance === 0) {
-				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
 				if (index >= 0 && cashlinks[index].funded) {
 					cashlinks[index].claimed = true;
 					accounts.remove(account.address.toUserFriendlyAddress());
 					updateStore();
 				}
 			} else {
-				const index = cashlinks.findIndex((cashlink) => cashlink.recipient === account.address.toUserFriendlyAddress());
 				if (index >= 0) {
 					cashlinks[index].claimed = false;
 				}
@@ -144,10 +142,7 @@
 	onMount(async () => {
 		await isClientReady();
 		await client.waitForConsensusEstablished();
-		let accountsArray = $latestCashlinks.map(({ recipient, claimed }) => {
-			if (!claimed) return recipient;
-		});
-		accountsArray = accountsArray.filter((x) => x !== undefined);
+		const accountsArray = $cashlinkArray.map(({ recipient, claimed }) => (!claimed ? recipient : undefined)).filter((x) => x !== undefined);
 		if (!accountsArray.length) return;
 		let rangeStart = 0;
 		let rangeEnd = 50;

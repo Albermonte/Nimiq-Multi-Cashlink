@@ -20,7 +20,6 @@
 <Router {url}>
 	<main>
 		<nav>
-			<!-- Don't use Link to prevent code being executed on backgroud from previous page -->
 			<Link to="/">Home</Link>
 			<Link to="about">About</Link>
 			<Link to="history">History</Link>
