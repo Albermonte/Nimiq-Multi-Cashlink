@@ -2,8 +2,8 @@ import { writable } from "svelte/store";
 import {
 	persist,
 	indexedDBStorage,
-	PersistentStore,
 } from "@macfja/svelte-persistent-store";
+import type { PersistentStore } from "@macfja/svelte-persistent-store";
 import type { Wallet } from "@nimiq/core-web/types";
 import type { Writable } from "svelte/store";
 import type { MultiCashlink } from "./model";

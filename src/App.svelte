@@ -1,5 +1,8 @@
 <script lang="typescript">
+	import { onMount } from "svelte";
+	
 	import Modal from "svelte-simple-modal";
+	import ConsensusModal from "./modals/ConsensusModal.svelte";
 	import { Router, Route, Link } from "svelte-routing";
 	import Home from "./pages/Home.svelte";
 	import Success from "./pages/Success.svelte";
@@ -10,11 +13,13 @@
 
 	import { showModal } from "./store";
 
-	import { initNimiq } from "./services/Nimiq";
-	initNimiq();
-
 	import { analyticsInstance, isDev } from "./services";
-	if (!isDev) analyticsInstance.record("eafc96b8-bfd1-4ab7-8911-1015e4997fbe");
+	if (!isDev)
+		analyticsInstance.record("eafc96b8-bfd1-4ab7-8911-1015e4997fbe");
+
+	onMount(() => {
+		showModal.set(ConsensusModal);
+	});
 </script>
 
 <Router {url}>
@@ -42,6 +47,7 @@
 	styleWindow={{
 		width: "65rem",
 		height: "min-content",
+		minWidth: "min-content",
 	}}
 />
 

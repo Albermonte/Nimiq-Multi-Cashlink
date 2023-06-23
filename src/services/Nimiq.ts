@@ -14,7 +14,8 @@ import {
 import { get } from "svelte/store";
 import { bind } from "svelte-simple-modal";
 
-import { wallet, balance, showModal, PlainTransaction } from "../store";
+import { wallet, balance, showModal } from "../store";
+import type { PlainTransaction } from "../store";
 
 import ConsensusModal from "../modals/ConsensusModal.svelte";
 import ErrorModal from "../modals/ErrorModal.svelte";
@@ -39,7 +40,7 @@ const workerURL = location.origin + "/nimiq/";
  * Create/Load Temp Wallet
  * Subscribe for tx from that Wallet
  */
-export const initNimiq = async () => {
+export const initNimiq = async (consensusType: "light" | "nano") => {
 	// Only show error logs
 	Nimiq.Log.instance.level = Nimiq.Log.ERROR;
 	await Nimiq.load(workerURL);
@@ -48,7 +49,7 @@ export const initNimiq = async () => {
 			// Create a volatile consensus (not storing peer information across page reloads)
 			// Seems faster and don't takes space on the user device
 			config.volatile(true);
-			config.feature(Nimiq.Client.Feature.MEMPOOL);
+			if (consensusType === "light") config.feature(Nimiq.Client.Feature.MEMPOOL);
 		},
 		{
 			network: isDev ? "test" : "main",
