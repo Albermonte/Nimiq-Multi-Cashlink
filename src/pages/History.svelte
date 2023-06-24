@@ -242,6 +242,7 @@
 
 		button {
 			margin: 0 1rem;
+			height: fit-content;
 		}
 	}
 

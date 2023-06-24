@@ -30,53 +30,63 @@
 				url: cashlink.url,
 				message: cashlink.message,
 				index,
-			}),
+			})
 		);
 	};
 </script>
 
 <div class="nq-card">
 	<div class="container">
-		<div class="index">
-			{index + 1}.
+		<div class="row">
+			<div class="index">
+				{index + 1}.
+			</div>
+			<div class="amount">
+				{cashlink.amount} NIM
+			</div>
 		</div>
-		<div class="amount">
-			{cashlink.amount} NIM
-		</div>
-		<div class="status">
-			{#if cashlink.claimed}
-				<p class="nq-button-s light-blue">Claimed</p>
-			{:else if cashlink.funded}
-				<p class="nq-button-s green">Funded</p>
-			{:else}
-				<p class="nq-button-s orange">Pending</p>
-				<!-- TODO: if error, show error pill and show a button to refund cashlink -->
-			{/if}
-		</div>
-		<div class="copy" data-tooltip={copyButtonText} on:click={copyToClipboard}>
-			<svg class="nq-icon">
-				<use
-					xlink:href={`${location.origin}/nimiq/nimiq-style.icons.svg#nq-copy`}
-				/>
-			</svg>
-		</div>
-		<div
-			class="share"
-			data-tooltip={"Social Media Share"}
-			on:click={() => openShareCashlinkModal(index)}
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="22px"
-				height="22px"
-				class="h-5 w-5"
-				viewBox="0 0 20 20"
-				fill="currentColor"
+		<div class="row">
+			<div class="status">
+				{#if cashlink.claimed}
+					<p class="nq-button-s light-blue">Claimed</p>
+				{:else if cashlink.funded}
+					<p class="nq-button-s green">Funded</p>
+				{:else}
+					<p class="nq-button-s orange">Pending</p>
+					<!-- TODO: if error, show error pill and show a button to refund cashlink -->
+				{/if}
+			</div>
+			<div
+				class="copy"
+				data-tooltip={copyButtonText}
+				on:click={copyToClipboard}
+				on:keypress={copyToClipboard}
 			>
-				<path
-					d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
-				/>
-			</svg>
+				<svg class="nq-icon">
+					<use
+						xlink:href={`${location.origin}/nimiq/nimiq-style.icons.svg#nq-copy`}
+					/>
+				</svg>
+			</div>
+			<div
+				class="share"
+				data-tooltip={"Social Media Share"}
+				on:click={() => openShareCashlinkModal(index)}
+				on:keypress={() => openShareCashlinkModal(index)}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="22px"
+					height="22px"
+					class="h-5 w-5"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+				>
+					<path
+						d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
+					/>
+				</svg>
+			</div>
 		</div>
 	</div>
 </div>
@@ -90,35 +100,32 @@
 	.container {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		padding: 1rem 3rem;
-		min-width: 75rem;
+		max-width: 94vw;
+		width: 75rem;
 	}
 
 	.index {
-		width: 5%;
 		color: var(--nimiq-blue);
 		font-weight: 600;
 		font-size: 2.25rem;
 	}
 
 	.amount {
-		width: 64%;
 		color: var(--nimiq-blue);
 		opacity: 0.6;
 		font-weight: 700;
 		font-size: 2.3rem;
 		text-align: left;
-		margin-left: 2rem;
 	}
 
 	.status {
-		width: 16%;
 		display: flex;
 		justify-content: center;
 	}
 
 	.copy {
-		width: 10%;
 		display: flex;
 		justify-content: center;
 		color: var(--nimiq-blue-darkened);
@@ -128,7 +135,6 @@
 	}
 
 	.share {
-		width: 5%;
 		display: flex;
 		justify-content: center;
 		color: var(--nimiq-blue-darkened);
@@ -139,5 +145,13 @@
 
 	.nq-button-s {
 		cursor: auto;
+	}
+
+	.row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
 	}
 </style>
