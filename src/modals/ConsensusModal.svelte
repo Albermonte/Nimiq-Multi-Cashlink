@@ -48,52 +48,64 @@
 			<div class="container">
 				<div class="column">
 					<h2>Nano Consensus</h2>
-					<span>Pros:</span>
-					<ul>
-						<li>Fastest to reach consensus</li>
-						<li>Lowest resource usage</li>
-					</ul>
-					<span>Cons:</span>
-					<ul>
-						<li>
-							The check for claimed Cashlinks is slower when there
-							are many Cashlinks
-						</li>
-						<li>
-							The fund of the Cashlink is slower when there are
-							many Cashlinks
-						</li>
-					</ul>
+					<details>
+						<summary>Pros & Cons</summary>
+						<span>Pros:</span>
+						<ul>
+							<li>Fastest to reach consensus</li>
+							<li>Lowest resource usage</li>
+						</ul>
+						<span>Cons:</span>
+						<ul>
+							<li>
+								The check for claimed Cashlinks is slower when
+								there are many Cashlinks
+							</li>
+							<li>
+								The fund of the Cashlink is slower when there
+								are many Cashlinks
+							</li>
+						</ul>
+					</details>
+
 					<i>Recommended for phones or less than 100 Cashlinks</i>
 					<button
 						class="nq-button-pill light-blue"
-						on:click={() => selectConsensus("nano")}>Use Nano</button
+						id="nano-consensus"
+						on:click={() => selectConsensus("nano")}
+						>Use Nano</button
 					>
 				</div>
 				<div class="column">
 					<h2>Light Consensus</h2>
-					<span>Pros:</span>
-					<ul>
-						<li>
-							The check for claimed Cashlinks is almost instant
-						</li>
-						<li>
-							The time it takes to get all of Cashlink funded is
-							much shorter
-						</li>
-					</ul>
-					<span>Cons:</span>
-					<ul>
-						<li>
-							Slower to reach consensus, can take some minutes and
-							even more time on phones
-						</li>
-						<li>More resource usage</li>
-					</ul>
+					<details>
+						<summary>Pros & Cons</summary>
+						<span>Pros:</span>
+						<ul>
+							<li>
+								The check for claimed Cashlinks is almost
+								instant
+							</li>
+							<li>
+								The time it takes to get all of Cashlink funded
+								is much shorter
+							</li>
+						</ul>
+						<span>Cons:</span>
+						<ul>
+							<li>
+								Slower to reach consensus, can take some minutes
+								and even more time on phones
+							</li>
+							<li>More resource usage</li>
+						</ul>
+					</details>
 					<i>Recommended for PC and any amount of Cashlinks</i>
 					<button
 						class="nq-button-pill green"
-						on:click={() => selectConsensus("light")}>Use Light</button
+						id="light-consensus"
+						on:click={() => selectConsensus("light")}
+						>Use Light</button
 					>
 				</div>
 			</div>
@@ -114,12 +126,7 @@
 
 	.w-200 {
 		width: 150rem;
-		max-width: 100%;
-	}
-
-	.w-65 {
-		width: 65rem;
-		max-width: 100%;
+		max-width: 90vw;
 	}
 
 	#big-hex {
@@ -184,6 +191,12 @@
 		gap: 4rem;
 	}
 
+	@media (max-width: 800px) {
+		.container {
+			grid-template-columns: 1fr;
+		}
+	}
+
 	.column {
 		display: flex;
 		flex-direction: column;
@@ -201,5 +214,27 @@
 		margin-top: 2rem;
 		margin-left: auto;
 		margin-right: auto;
+	}
+
+	details {
+		border: 1px solid #aaa;
+		border-radius: 4px;
+		padding: 0.5em 0.5em 0;
+	}
+
+	summary {
+		font-weight: bold;
+		margin: -0.5em -0.5em 0;
+		padding: 0.5em;
+		cursor: pointer;
+	}
+
+	details[open] {
+		padding: 0.5em;
+	}
+
+	details[open] summary {
+		border-bottom: 1px solid #aaa;
+		margin-bottom: 0.5em;
 	}
 </style>

@@ -45,9 +45,10 @@
 	closeOnEsc={false}
 	closeOnOuterClick={false}
 	styleWindow={{
-		width: "65rem",
+		width: "100%",
 		height: "min-content",
 		minWidth: "min-content",
+		maxWidth: "120rem",
 	}}
 />
 
