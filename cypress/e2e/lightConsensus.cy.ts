@@ -54,24 +54,25 @@ describe("Test Cashlink Creation", () => {
 
 		cy.compareSnapshot("CashlinksFunded", 0.15);
 
-		cy.get(':nth-child(4) > .container > :nth-child(2) > .copy > .nq-icon > use').click();
+		cy.get('#copyCashlink').click();
 
 		cy.window().its('navigator.clipboard')
 			.then((clip) => clip.readText())
 			.should("contain", "https://hub.nimiq-testnet.com/")
-			.then((text) => {
-				Cypress.env("url", text);
-			});
 	});
 
 	it("check clipboard cashlink", () => {
-		const url = Cypress.env("url");
-		cy.log("this is what was in clipboard", url);
-		cy.visit(url);
-		cy.origin('https://hub.nimiq-testnet.com', () => {
-			cy.contains("0.00001");
-			cy.contains("Testing Multi Cash");
-		});
+		cy.window().its('navigator.clipboard')
+			.then((clip) => clip.readText())
+			.then((text) => {
+				const url = text;
+				cy.log("this is what was in clipboard", url);
+				cy.visit(url);
+				cy.origin('https://hub.nimiq-testnet.com', () => {
+					cy.contains("0.00001");
+					cy.contains("Testing Multi Cash");
+				});
+			});
 	});
 
 	it("check history ", () => {
