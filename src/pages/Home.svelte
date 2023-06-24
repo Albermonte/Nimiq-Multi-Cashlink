@@ -160,12 +160,11 @@
 					display: block;
 					position: absolute;
 					right: 12px;
-					top: 50%;
-					bottom: 50%;
+					top: 54%;
 					margin: 0;
 					padding: 0;
 					font-size: 16px;
-					font-weight: 600;
+					font-weight: 800;
 					letter-spacing: 0.08em;
 					opacity: 0.55;
 					transition: opacity 0.2s ease-out;
