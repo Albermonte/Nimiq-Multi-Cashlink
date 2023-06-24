@@ -6,8 +6,12 @@
       "dom"
     ],
     "types": [
-      "cypress"
-    ]
+      "node",
+      "cypress",
+      "cypress-visual-regression"
+    ],
+    "baseUrl": "http://localhost:8080/",
+    "esModuleInterop": true
   },
   "include": [
     "**/*.ts"
