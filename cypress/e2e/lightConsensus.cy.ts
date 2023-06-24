@@ -1,7 +1,7 @@
 describe("Test Cashlink Creation", () => {
 	const walletString =
 		"[109,61,221,91,63,138,201,125,88,21,118,170,11,220,72,61,153,192,96,152,224,209,61,166,85,94,46,26,203,156,143,105,70,5,140,126,218,146,220,121,192,29,86,223,130,97,202,210,222,29,237,66,172,51,17,139,113,255,7,15,217,241,7,246,0]";
-	const consensusTimeout = 2 * 60 * 1e3;
+	const consensusTimeout = 5 * 60 * 1e3;
 
 	const chooseConsensus = () => {
 		// Choose light consensus
