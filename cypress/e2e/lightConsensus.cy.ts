@@ -1,18 +1,16 @@
-const walletString =
-	"[109,61,221,91,63,138,201,125,88,21,118,170,11,220,72,61,153,192,96,152,224,209,61,166,85,94,46,26,203,156,143,105,70,5,140,126,218,146,220,121,192,29,86,223,130,97,202,210,222,29,237,66,172,51,17,139,113,255,7,15,217,241,7,246,0]";
-const consensusTimeout = 2 * 60 * 1e3;
-
-const chooseConsensus = () => {
-	// Choose nano consensus
-	cy.get('#nano-consensus').click();
-
-	cy.get(".consensus-established", { timeout: consensusTimeout }).should(
-		"be.visible",
-	);
-};
-
 describe("Test Cashlink Creation", () => {
-	let url = "";
+	const walletString =
+		"[109,61,221,91,63,138,201,125,88,21,118,170,11,220,72,61,153,192,96,152,224,209,61,166,85,94,46,26,203,156,143,105,70,5,140,126,218,146,220,121,192,29,86,223,130,97,202,210,222,29,237,66,172,51,17,139,113,255,7,15,217,241,7,246,0]";
+	const consensusTimeout = 2 * 60 * 1e3;
+
+	const chooseConsensus = () => {
+		// Choose light consensus
+		cy.get('#light-consensus').click();
+
+		cy.get(".consensus-established", { timeout: consensusTimeout }).should(
+			"be.visible",
+		);
+	};
 
 	beforeEach(() => {
 		cy.visit("/");
@@ -56,7 +54,8 @@ describe("Test Cashlink Creation", () => {
 
 		cy.compareSnapshot("CashlinksFunded", 0.15);
 
-		cy.get(":nth-child(4) > .container > .copy").click();
+		cy.get(':nth-child(4) > .container > :nth-child(2) > .copy > .nq-icon > use').click();
+
 		cy.window().its('navigator.clipboard')
 			.then((clip) => clip.readText())
 			.should("contain", "https://hub.nimiq-testnet.com/")
