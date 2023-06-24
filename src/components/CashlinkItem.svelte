@@ -56,8 +56,9 @@
 					<!-- TODO: if error, show error pill and show a button to refund cashlink -->
 				{/if}
 			</div>
-			<div
+			<button
 				class="copy"
+				id="copyCashlink"
 				data-tooltip={copyButtonText}
 				on:click={copyToClipboard}
 				on:keypress={copyToClipboard}
@@ -67,8 +68,8 @@
 						xlink:href={`${location.origin}/nimiq/nimiq-style.icons.svg#nq-copy`}
 					/>
 				</svg>
-			</div>
-			<div
+			</button>
+			<button
 				class="share"
 				data-tooltip={"Social Media Share"}
 				on:click={() => openShareCashlinkModal(index)}
@@ -86,7 +87,7 @@
 						d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
 					/>
 				</svg>
-			</div>
+			</button>
 		</div>
 	</div>
 </div>
@@ -129,6 +130,8 @@
 		display: flex;
 		justify-content: center;
 		color: var(--nimiq-blue-darkened);
+		border-width: 0;
+		background-color: transparent;
 		svg {
 			cursor: pointer;
 		}
@@ -138,6 +141,8 @@
 		display: flex;
 		justify-content: center;
 		color: var(--nimiq-blue-darkened);
+		border-width: 0;
+		background-color: transparent;
 		svg {
 			cursor: pointer;
 		}
