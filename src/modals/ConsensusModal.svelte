@@ -1,15 +1,4 @@
-<script lang="ts">
-	import { initNimiq } from "../services/Nimiq";
-
-	let isConsensusSelected = false;
-	const selectConsensus = (consensus: "light" | "nano") => {
-		isConsensusSelected = true;
-		initNimiq(consensus);
-	};
-</script>
-
 <main class="w-200">
-	{#if isConsensusSelected}
 		<svg
 			height="48"
 			width="54"
@@ -38,79 +27,6 @@
 			/>
 		</svg>
 		<p>Waiting for consensus...</p>
-	{:else}
-		<div>
-			<h1>Consensus Selection</h1>
-			<span
-				>You need to choose which type of consensus you want to use,
-				each has its pros and cons</span
-			>
-			<div class="container">
-				<div class="column">
-					<h2>Nano Consensus</h2>
-					<details>
-						<summary>Pros & Cons</summary>
-						<span>Pros:</span>
-						<ul>
-							<li>Fastest to reach consensus</li>
-							<li>Lowest resource usage</li>
-						</ul>
-						<span>Cons:</span>
-						<ul>
-							<li>
-								The check for claimed Cashlinks is slower when
-								there are many Cashlinks
-							</li>
-							<li>
-								The fund of the Cashlink is slower when there
-								are many Cashlinks
-							</li>
-						</ul>
-					</details>
-
-					<i>Recommended for phones or less than 100 Cashlinks</i>
-					<button
-						class="nq-button-pill light-blue"
-						id="nano-consensus"
-						on:click={() => selectConsensus("nano")}
-						>Use Nano</button
-					>
-				</div>
-				<div class="column">
-					<h2>Light Consensus</h2>
-					<details>
-						<summary>Pros & Cons</summary>
-						<span>Pros:</span>
-						<ul>
-							<li>
-								The check for claimed Cashlinks is almost
-								instant
-							</li>
-							<li>
-								The time it takes to get all of Cashlink funded
-								is much shorter
-							</li>
-						</ul>
-						<span>Cons:</span>
-						<ul>
-							<li>
-								Slower to reach consensus, can take some minutes
-								and even more time on phones
-							</li>
-							<li>More resource usage</li>
-						</ul>
-					</details>
-					<i>Recommended for PC and any amount of Cashlinks</i>
-					<button
-						class="nq-button-pill green"
-						id="light-consensus"
-						on:click={() => selectConsensus("light")}
-						>Use Light</button
-					>
-				</div>
-			</div>
-		</div>
-	{/if}
 </main>
 
 <style lang="scss">

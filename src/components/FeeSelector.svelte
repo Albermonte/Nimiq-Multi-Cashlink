@@ -1,6 +1,6 @@
 <!-- https://github.com/nimiq/vue-components/blob/master/src/components/SelectBar.vue -->
 <script lang="ts">
-	import { multiCashlink } from "../store";
+	import { multiCashlink } from "$lib/store";
 
 	const options = [
 		{

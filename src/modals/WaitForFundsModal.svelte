@@ -5,12 +5,12 @@
 		"Nimiq is a simple, secure and censorship resistant cryptocurrency",
 		"Blake2b is used for hashing and ed25519 for the signatures.",
 		"The Nimiq Mainnet was launched April 14, 2018.",
-		"The Nimiq Blockchain uses Non-Interactive Proofs of Proof-of-Work.",
-		"Nimiq’s Nano clients require little data and sync fast.",
-		"Argon2d is Nimiq’s memory-bound PoW algorithm.",
+		// "The Nimiq Blockchain uses Non-Interactive Proofs of Proof-of-Work.",
+		"Nimiq's Light clients require little data and sync fast.",
+		// "Argon2d is Nimiq’s memory-bound PoW algorithm.",
 		"Nimiq uses ed25519 Schnorr signatures.",
 		"State is stored in an accounts tree.",
-		"Nimiq is written in JS and Rust (latter in progress) and optimized using WebAssembly.",
+		"Nimiq is written Rust and optimized using WebAssembly.",
 		"Nimiq is an Inuit word for an object or force that binds things together.",
 	];
 
