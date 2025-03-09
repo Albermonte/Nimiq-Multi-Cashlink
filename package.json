@@ -40,5 +40,19 @@
 		"@nimiq/utils": "^0.12.0",
 		"svelte-simple-modal": "^2.0.0",
 		"svelte-tiny-virtual-list": "^2.1.2"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@sveltejs/kit",
+			"@swc/core",
+			"@web3-js/scrypt-shim",
+			"@web3-js/websocket",
+			"bufferutil",
+			"es5-ext",
+			"esbuild",
+			"keccak",
+			"secp256k1",
+			"utf-8-validate"
+		]
 	}
 }

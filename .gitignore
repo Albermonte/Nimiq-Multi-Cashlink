@@ -10,3 +10,5 @@
 /cypress/snapshots/diff/
 
 .svelte-kit/
+
+build/
