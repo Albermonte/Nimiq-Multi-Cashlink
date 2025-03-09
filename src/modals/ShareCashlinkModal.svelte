@@ -1,5 +1,5 @@
 <script>
-	import { showModal } from "../store";
+	import { showModal } from "$lib/store";
 	import {
 		Email,
 		HackerNews,

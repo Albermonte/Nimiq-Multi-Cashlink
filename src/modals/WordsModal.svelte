@@ -1,18 +1,20 @@
 <script lang="ts">
-	import { wallet, showModal } from "../store";
-	import { createMultiCashlinks } from "../services";
+	import * as Nimiq from "@nimiq/core";
+	import { wallet, showModal } from "$lib/store";
+	import { createMultiCashlinks } from "$lib/services";
+	import { get } from "svelte/store";
 	/**
 	 * Retrieves 24 words from the generated wallet
 	 */
 	let privateKeyMnemonic: string[] = [];
 	const nimiqWallet = $wallet;
-	privateKeyMnemonic = Nimiq.MnemonicUtils.entropyToLegacyMnemonic(
-		nimiqWallet.keyPair.privateKey.serialize(),
+	privateKeyMnemonic = Nimiq.MnemonicUtils.entropyToMnemonic(
+		nimiqWallet!.privateKey.serialize(),
 	);
 	export const mnemonic = privateKeyMnemonic.join(" ");
 
 	const saveMnemonic = () => {
-		const text = privateKeyMnemonic.join('\n');
+		const text = privateKeyMnemonic.join("\n");
 		const element = document.createElement("a");
 		element.setAttribute(
 			"href",

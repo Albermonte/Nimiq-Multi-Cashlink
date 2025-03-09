@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { bind } from "svelte-simple-modal";
 	import ShareCashlinkModal from "../modals/ShareCashlinkModal.svelte";
-	import { showModal } from "../store";
-	import type { CashlinkStore } from "../store";
+	import { showModal } from "$lib/store";
+	import type { CashlinkStore } from "$lib/store";
 
 	export let cashlink: CashlinkStore;
 	export let index: number;

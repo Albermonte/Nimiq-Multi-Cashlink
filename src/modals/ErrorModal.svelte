@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { showModal } from "../store";
+	import { showModal } from "$lib/store";
 
 	export let errorMessage: string;
 	export let handleRetry: Function;
