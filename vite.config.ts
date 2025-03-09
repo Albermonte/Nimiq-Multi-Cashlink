@@ -4,6 +4,9 @@ import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
 export default defineConfig({
+	build: {
+		target: 'es2022',
+	},
 	plugins: [
 		sveltekit(),
 		wasm(),
